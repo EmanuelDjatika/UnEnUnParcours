@@ -11,6 +11,8 @@ interface Props {
   onChoisirEspace: (role: Role) => void;
   /** Retour au choix de l'espace */
   onRetour?: () => void;
+  /** Retour à la page de présentation */
+  onAccueil?: () => void;
 }
 
 const ESPACES: Record<Role, { titre: string; texte: string; image: string }> = {
@@ -20,7 +22,7 @@ const ESPACES: Record<Role, { titre: string; texte: string; image: string }> = {
 };
 
 /** Page de connexion propre à chaque espace (identifiants préremplis : prototype) */
-export default function Connexion({ role, onConnecter, onChoisirEspace, onRetour }: Props) {
+export default function Connexion({ role, onConnecter, onChoisirEspace, onRetour, onAccueil }: Props) {
   const compteParDefaut = COMPTES.find((c) => c.role === role);
   const [identifiant, setIdentifiant] = useState(compteParDefaut?.identifiant ?? '');
   const [motDePasse, setMotDePasse] = useState(compteParDefaut?.motDePasse ?? '');
@@ -51,7 +53,7 @@ export default function Connexion({ role, onConnecter, onChoisirEspace, onRetour
       {/* Panneau du formulaire */}
       <section className="cx-panneau">
         <div className="cx-contenu">
-          <LogoEnfant taille={52} />
+          <button type="button" className="cx-logo" onClick={onAccueil} aria-label="Présentation du projet"><LogoEnfant taille={52} /></button>
           {!role ? (
             <>
               <div className="cx-tete">

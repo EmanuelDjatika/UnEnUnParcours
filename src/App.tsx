@@ -4,6 +4,7 @@ import { useSession } from './store/useSession';
 import { ACCUEIL } from './data/comptes';
 import type { Compte, Role } from './data/comptes';
 import Connexion from './pages/Connexion';
+import Presentation from './pages/Presentation';
 import Mairie from './pages/Mairie';
 import Structures from './pages/Structures';
 import Jeux from './pages/Jeux';
@@ -48,27 +49,33 @@ export default function App() {
 
   // Espace visé par l'adresse : /admin…, /mairie…, /structure…
   const roleChemin: Role | undefined = (['admin', 'mairie', 'structure'] as Role[]).find((r) => chemin === ACCUEIL[r] || chemin.startsWith(ACCUEIL[r] + '/'));
-  const pageConnexion = chemin === '/' || chemin === '/connexion' || chemin.endsWith('/connexion');
+  const pageConnexion = chemin === '/connexion' || chemin.endsWith('/connexion');
 
   // Garde :
   // - pas connecté → page de connexion de l'espace visé (ou choix de l'espace) ;
   // - connecté sur une page de connexion de son espace → accueil de son espace ;
   // - connecté sur un chemin d'un autre espace → page de connexion de cet espace.
   let cible: string;
-  if (!compte || (roleChemin && roleChemin !== compte.role)) cible = roleChemin ? `${ACCUEIL[roleChemin]}/connexion` : '/';
+  // « / » : page de présentation du projet, ouverte à tous
+  if (chemin === '/') cible = '/';
+  else if (!compte || (roleChemin && roleChemin !== compte.role)) cible = roleChemin ? `${ACCUEIL[roleChemin]}/connexion` : '/connexion';
   else if (pageConnexion || !cheminsAutorises(compte).includes(chemin)) cible = ACCUEIL[compte.role];
   else cible = chemin;
   useEffect(() => {
     if (cible !== chemin) aller(cible, true);
   });
 
-  if (cible === '/' || cible.endsWith('/connexion')) {
-    const roleConnexion = cible === '/' ? undefined : roleChemin;
+  if (cible === '/') {
+    return <Presentation onEntrer={() => aller(compte ? ACCUEIL[compte.role] : '/connexion')} connecte={!!compte} />;
+  }
+  if (cible.endsWith('/connexion')) {
+    const roleConnexion = cible === '/connexion' ? undefined : roleChemin;
     return (
       <div className="app app-connexion">
         <Connexion key={roleConnexion ?? 'choix'} role={roleConnexion}
           onChoisirEspace={(r) => aller(`${ACCUEIL[r]}/connexion`)}
-          onRetour={() => aller('/')}
+          onRetour={() => aller('/connexion')}
+          onAccueil={() => aller('/')}
           onConnecter={(id, mdp) => {
             // On n'accepte que les comptes de l'espace de cette page
             const c = connecter(id, mdp, roleConnexion);
