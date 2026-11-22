@@ -1,0 +1,11 @@
+# Déploiement Netlify : build Vite + routes de l'application (rafraîchissement sans 404)
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Toutes les adresses (/admin, /mairie/enregistrer, /structure/jeux…) renvoient index.html :
+# c'est l'application qui choisit la page à afficher.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
