@@ -5,6 +5,7 @@ import GraphiqueBarres from '../components/GraphiqueBarres';
 import FiltrePastille from '../components/FiltrePastille';
 import type { Barre } from '../components/GraphiqueBarres';
 import { TRANCHES, estPrescolaire, libelleTranche, trancheA } from '../utils/age';
+import EtiquetteStructure, { LISTE_TYPES, TYPES_STRUCTURE, nomCourt, resumeTypes } from '../components/EtiquetteStructure';
 
 const SEXES = [
   { nom: 'Filles', couleur: 'var(--orange)' },
@@ -33,36 +34,41 @@ interface Props {
   store: Store;
   /** Absent : pas de bouton « Enregistrer » (ex. administration) */
   onEnregistrer?: () => void;
-  /** Absent : pas d'accès aux crèches (ex. mairie) */
-  onCreches?: () => void;
+  /** Absent : pas d'accès aux structures et ateliers (ex. mairie) */
+  onStructures?: () => void;
   /** Compte mairie : tableau limité à sa ville */
   villeFixe?: string;
   /** Ouvre la liste des enfants (option : seulement ceux à orienter vers le préscolaire) */
   onEnfants: (prescolaire: boolean) => void;
 }
 
-export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfants, villeFixe }: Props) {
-  const { enfants: tous, regions, localites, quartiers, creches, presences } = store.donnees;
+export default function TableauDeBord({ store, onEnregistrer, onStructures, onEnfants, villeFixe }: Props) {
+  const { enfants: tous, regions, localites, quartiers, structures, presences } = store.donnees;
   // Filtres du tableau de bord
   const [regionId, setRegionId] = useState('');
   const [localiteId, setLocaliteId] = useState(villeFixe ?? '');
   const [quartierId, setQuartierId] = useState('');
   const [sexe, setSexe] = useState('');
   const [tranche, setTranche] = useState('');
+  // Type de la structure qui couvre le quartier de l'enfant ('' : tous)
+  const [typeStructure, setTypeStructure] = useState('');
   const auj = new Date();
-  const nbFiltres = [regionId, villeFixe ? '' : localiteId, quartierId, sexe, tranche].filter(Boolean).length;
-  const effacerFiltres = () => { setRegionId(''); setLocaliteId(villeFixe ?? ''); setQuartierId(''); setSexe(''); setTranche(''); };
+  const nbFiltres = [regionId, villeFixe ? '' : localiteId, quartierId, sexe, tranche, typeStructure].filter(Boolean).length;
+  const effacerFiltres = () => { setRegionId(''); setLocaliteId(villeFixe ?? ''); setQuartierId(''); setSexe(''); setTranche(''); setTypeStructure(''); };
 
   const regionDe = (villeId: string) => localites.find((l) => l.id === villeId)?.regionId;
+  const typeDuQuartier = (qid: string) => structures.find((s) => s.id === quartiers.find((q) => q.id === qid)?.structureId)?.type;
   const villesRegion = localites.filter((l) => !regionId || l.regionId === regionId);
   const enfants = tous.filter((e) =>
     (!regionId || regionDe(e.localiteId) === regionId) &&
     (!localiteId || e.localiteId === localiteId) &&
     (!quartierId || e.quartierId === quartierId) &&
     (!sexe || e.sexe === sexe) &&
-    (!tranche || trancheA(e.dateNaissance, auj) === Number(tranche)));
-  const crecheDuQuartier = quartiers.find((q) => q.id === quartierId)?.crecheId;
-  const crechesVues = creches.filter((c) => (!regionId || regionDe(c.localiteId) === regionId) && (!localiteId || c.localiteId === localiteId) && (!crecheDuQuartier || c.id === crecheDuQuartier));
+    (!tranche || trancheA(e.dateNaissance, auj) === Number(tranche)) &&
+    (!typeStructure || typeDuQuartier(e.quartierId) === typeStructure));
+  const structureDuQuartier = quartiers.find((q) => q.id === quartierId)?.structureId;
+  const structuresVues = structures.filter((c) => (!regionId || regionDe(c.localiteId) === regionId) && (!localiteId || c.localiteId === localiteId)
+    && (!quartierId || c.id === structureDuQuartier) && (!typeStructure || c.type === typeStructure));
   const ids = new Set(enfants.map((e) => e.id));
   const presencesVues = presences.filter((p) => ids.has(p.enfantId));
 
@@ -86,9 +92,9 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
     return { suivis: suivis.length, venus: suivis.filter((p) => p.venu).length, pct: suivis.length ? Math.round((suivis.filter((p) => p.venu).length / suivis.length) * 100) : 0 };
   };
   const global = taux(presencesVues);
-  const participation = crechesVues.map((c) => {
-    const idsC = new Set(enfants.filter((e) => quartiers.find((q) => q.id === e.quartierId)?.crecheId === c.id).map((e) => e.id));
-    return { creche: c, ...taux(presences.filter((p) => idsC.has(p.enfantId))) };
+  const participation = structuresVues.map((c) => {
+    const idsC = new Set(enfants.filter((e) => quartiers.find((q) => q.id === e.quartierId)?.structureId === c.id).map((e) => e.id));
+    return { structure: c, ...taux(presences.filter((p) => idsC.has(p.enfantId))) };
   });
 
   const prescolaire = enfants.filter((e) => estPrescolaire(e.dateNaissance, auj)).length;
@@ -105,9 +111,9 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
     { valeur: new Set(enfants.map((e) => e.quartierId)).size, libelle: 'Quartiers couverts', detail: 'Avec au moins un enfant enregistré', couleur: 'var(--texte)', action: undefined },
   ] : [
     { valeur: enfants.length, libelle: 'Enfants enregistrés', detail: `${filles} filles · ${enfants.length - filles} garçons`, couleur: 'var(--texte)', action: () => onEnfants(false) },
-    { valeur: `${global.pct}%`, libelle: 'Participation aux ateliers', detail: `${global.venus} venus sur ${global.suivis} familles contactées`, couleur: 'var(--texte)', action: onCreches },
+    { valeur: `${global.pct}%`, libelle: 'Participation aux ateliers', detail: `${global.venus} venus sur ${global.suivis} familles contactées`, couleur: 'var(--texte)', action: onStructures },
     { valeur: prescolaire, libelle: 'À orienter vers le préscolaire', detail: 'Enfants de 3 ans et plus', couleur: 'var(--texte)', action: () => onEnfants(true) },
-    { valeur: crechesVues.length, libelle: 'Crèches partenaires', detail: `${new Set(enfants.map((e) => e.quartierId)).size} quartiers couverts`, couleur: 'var(--texte)', action: onCreches },
+    { valeur: structuresVues.length, libelle: 'Structures partenaires', detail: resumeTypes(structuresVues), couleur: 'var(--texte)', action: onStructures },
   ];
 
   return (
@@ -137,6 +143,8 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
             options={[{ id: 'F', nom: 'Filles' }, { id: 'M', nom: 'Garçons' }]} onChange={setSexe} />
           <FiltrePastille libelle="Âge" valeur={tranche} tous="Tous"
             options={TRANCHES.map((t) => ({ id: String(t), nom: libelleTranche(t) }))} onChange={setTranche} />
+          <FiltrePastille libelle="Type de structure" valeur={typeStructure} tous="Toutes"
+            options={LISTE_TYPES.map((t) => ({ id: t, nom: TYPES_STRUCTURE[t].libelle }))} onChange={setTypeStructure} />
         </div>
         <div className="tri-resume">
           <span><strong>{enfants.length}</strong> enfant{enfants.length > 1 ? 's' : ''}{nbFiltres ? ` · ${nbFiltres} filtre${nbFiltres > 1 ? 's' : ''}` : ''}</span>
@@ -145,7 +153,7 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
       </section>
 
       {/* Action principale, bien en évidence */}
-      {(onEnregistrer || onCreches) && <div className="tdb-actions">
+      {onEnregistrer && <div className="tdb-actions">
         {onEnregistrer && <button className="tdb-cta" onClick={onEnregistrer}>
           <span className="tdb-cta-plus" aria-hidden="true">
             {/* Croix dessinée en SVG : parfaitement centrée, quelle que soit la police */}
@@ -156,7 +164,6 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
             <small>Nouvelle naissance, avec l'accord du parent</small>
           </span>
         </button>}
-        {onCreches && <button className="tdb-secondaire" onClick={onCreches}>Crèches et ateliers ›</button>}
       </div>}
 
       {tous.length === 0 && <p className="tdb-vide">Aucune donnée pour l'instant. Chargez la démonstration ou enregistrez un enfant.</p>}
@@ -174,14 +181,15 @@ export default function TableauDeBord({ store, onEnregistrer, onCreches, onEnfan
 
       {!villeFixe && <section className="tdb-carte">
         <div className="tdb-carte-tete">
-          <h3>Participation par crèche</h3>
+          <h3>Participation par structure</h3>
           <span className="tdb-detail">Venus / familles contactées</span>
         </div>
         <div className="tdb-anneaux">
           {participation.map((p) => (
-            <div key={p.creche.id} className="tdb-anneau">
+            <div key={p.structure.id} className="tdb-anneau">
               <Anneau valeur={p.pct} couleur={ACCENT} />
-              <strong>{p.creche.nom.replace(/^Crèche\s*/, '').replace(/\s*\(.*\)$/, '')}</strong>
+              <strong>{nomCourt(p.structure.nom)}</strong>
+              <EtiquetteStructure type={p.structure.type} />
               <span className="tdb-detail">{p.venus} / {p.suivis}</span>
             </div>
           ))}

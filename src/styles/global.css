@@ -514,18 +514,40 @@ button.tdb-tuile:hover .tdb-fleche { color: var(--orange); transform: translateX
 .bc-deco:hover { background: rgba(118, 118, 128, 0.2); }
 .hero { margin-top: 14px; }
 
-/* ===== Page de connexion ===== */
-.connexion { display: grid; gap: 20px; padding-top: 20px; }
-.connexion-hero { margin: 0; }
-.connexion-carte {
-  width: 100%; max-width: 460px; justify-self: center; margin-top: -60px; position: relative; z-index: 2;
-  background: #fff; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 18px 48px rgba(30, 42, 74, 0.12);
+/* ===== Page de connexion : deux panneaux ===== */
+.app-connexion { max-width: none; padding: 0; }
+.app-connexion .pied { display: none; }
+.connexion {
+  min-height: 100vh; display: grid; grid-template-columns: 1.15fr 1fr;
+  gap: 16px; padding: 16px; background: var(--creme);
 }
-.connexion-carte h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
-.connexion-carte .champ input { background: #fff; border: 1px solid #D9D9DE; }
-.connexion-carte .champ input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.15); }
-.connexion-carte .message { margin: 0; }
+.cx-visuel { position: relative; border-radius: 28px; overflow: hidden; min-height: 320px; }
+.cx-visuel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 40%; }
+.cx-visuel::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(30, 42, 74, 0.72) 0%, rgba(30, 42, 74, 0.25) 38%, transparent 60%);
+}
+.cx-visuel-texte { position: absolute; left: 40px; right: 40px; bottom: 36px; z-index: 1; color: #fff; }
+.cx-visuel-texte h1 { margin: 0; font-size: clamp(2rem, 3.6vw, 3.2rem); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; }
+.cx-visuel-texte p { margin: 10px 0 0; font-size: 1.05rem; font-weight: 500; opacity: 0.9; }
+.cx-panneau { display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 28px; padding: 40px 24px; }
+.cx-contenu { width: 100%; min-width: 0; max-width: 380px; display: flex; flex-direction: column; gap: 24px; }
+.cx-tete h2 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
+.cx-tete p { margin: 6px 0 0; color: var(--tdb-gris); }
+.cx-espace { display: inline-block; margin-bottom: 8px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--orange); }
+.cx-form, .cx-espaces { display: flex; flex-direction: column; gap: 14px; }
+.cx-form .champ input { background: #F5F5F7; border: 1.5px solid transparent; }
+.cx-form .champ input:focus { background: #fff; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.15); }
+.cx-form .message { margin: 0; }
+.cx-form .btn-large { margin-top: 6px; }
+.cx-retour { align-self: center; font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--tdb-gris); background: none; border: none; cursor: pointer; padding: 4px; }
+.cx-retour:hover { color: var(--texte); }
+@media (max-width: 860px) {
+  .connexion { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 12px; min-height: auto; }
+  .cx-visuel { min-height: 260px; }
+  .cx-visuel-texte { left: 22px; right: 22px; bottom: 20px; }
+  .cx-panneau { padding: 28px 20px; }
+}
 .comptes-demo summary { cursor: pointer; color: var(--texte-doux); font-size: 0.9rem; font-weight: 600; padding: 4px 0; }
 .comptes-demo ul { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
 .comptes-demo li button {
@@ -568,7 +590,7 @@ button.tdb-tuile:disabled { cursor: default; transform: none; }
   border: none; background: #F5F5F7; border-radius: 999px; padding: 8px 14px;
 }
 .comptes-choix button.actif { background: var(--orange); color: #fff; }
-.connexion-note { text-align: center; margin: 0; font-size: 0.82rem; }
+.connexion-note { text-align: center; margin: 0; font-size: 0.82rem; color: var(--tdb-gris); }
 .kpi-age-barre { height: 6px; margin-top: 12px; background: #fff; }
 
 /* Couleur propre à chaque classe d'âge (variable --c) */
@@ -711,3 +733,32 @@ button.tdb-tuile:disabled { cursor: default; transform: none; }
   .popup-check path { animation: none; stroke-dashoffset: 0; }
   .popup-spinner { animation-duration: 2.5s; }
 }
+
+/* ===== Structures : étiquette de type, gestion ===== */
+.etiquette-structure {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 700; white-space: nowrap; line-height: 1.4;
+}
+.hero-texte .etiquette-structure { background: #fff !important; margin-top: 6px; align-self: flex-start; }
+.aide-structure { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.popup .etiquette-structure { margin: -4px auto 8px; }
+.type-choix { flex-wrap: wrap; }
+.type-choix button { display: inline-flex; align-items: center; gap: 6px; }
+.quartiers-choix { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.quartiers-choix label {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 10px 12px; border-radius: 12px; background: #F5F5F7;
+}
+.quartiers-choix label.actif { background: var(--orange-clair); }
+.quartiers-choix input { accent-color: var(--orange); width: 18px; height: 18px; }
+.quartiers-choix span { font-weight: 600; }
+.quartiers-choix small { margin-left: auto; color: var(--tdb-gris); font-size: 0.8rem; }
+.structures-liste { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.structure-infos { display: flex; flex-direction: column; flex: 1; min-width: 0; text-align: left; }
+.tri > .tri-effacer { align-self: center; }
+.type-choix button.actif { border-color: currentColor; background: color-mix(in srgb, currentColor 10%, #fff); }
+.structures-liste li { padding: 12px 14px; border-radius: 14px; background: #F5F5F7; }
+.structures-liste li:hover { background: #EFEFF2; }
+.cx-panneau, .cx-visuel { min-width: 0; }
+.hero-bouton { margin-top: 22px; align-self: flex-start; position: relative; z-index: 1; }

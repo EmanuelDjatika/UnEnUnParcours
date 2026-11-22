@@ -19,19 +19,27 @@ export interface Localite {
   regionId: string;
 }
 
-/** Une crèche, qui accueille les ateliers d'un ou plusieurs quartiers */
-export interface Creche {
+/** Les trois types de structures qui organisent les ateliers */
+export type TypeStructure = 'creche' | 'ecole_prescolaire' | 'centre_social';
+
+/** Une structure d'accueil (crèche, école préscolaire ou centre social) :
+ *  elle organise les ateliers des quartiers qu'elle couvre */
+export interface Structure {
   id: string;
   nom: string;
+  type: TypeStructure;
   localiteId: string;
+  /** Nom de l animatrice (facultatif) */
+  animatrice?: string;
 }
 
-/** Un quartier, rattaché à une localité et à une crèche */
+/** Un quartier, rattaché à une localité et couvert par au plus une structure */
 export interface Quartier {
   id: string;
   nom: string;
   localiteId: string;
-  crecheId: string;
+  /** Structure qui couvre ce quartier ('' : aucune pour le moment) */
+  structureId: string;
 }
 
 /** Un enfant enregistré à la mairie */
@@ -47,7 +55,7 @@ export interface Enfant {
   langue: Langue;
   localiteId: string;
   quartierId: string;
-  /** Accord du parent pour être contacté par la crèche (toujours vrai) */
+  /** Accord du parent pour être contacté par la structure du quartier (toujours vrai) */
   consentement: boolean;
   /** Date d'enregistrement (ISO) */
   dateEnregistrement: string;
@@ -94,7 +102,7 @@ export type Ateliers = Record<TrancheId, Jeu[]>;
 export interface Donnees {
   regions: Region[];
   localites: Localite[];
-  creches: Creche[];
+  structures: Structure[];
   quartiers: Quartier[];
   enfants: Enfant[];
   presences: Presence[];

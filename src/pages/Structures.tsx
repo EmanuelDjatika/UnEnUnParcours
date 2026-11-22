@@ -6,9 +6,9 @@ import ListeAppels from '../components/ListeAppels';
 import { TRANCHES, dateAtelier, estPrescolaire, libelleMois, libelleTranche, moisCourant, trancheA, texteAge } from '../utils/age';
 import FiltrePastille from '../components/FiltrePastille';
 import IllustrationAge from '../components/IllustrationAge';
+import EtiquetteStructure, { LISTE_TYPES, TYPES_STRUCTURE, nomCourt } from '../components/EtiquetteStructure';
+import GestionStructures from '../components/GestionStructures';
 
-/** « Crèche Les Petits Pas (Bè-Tokoin) » → « Les Petits Pas » */
-const nomCourt = (nom: string) => nom.replace(/^Crèche\s*/, '').replace(/\s*\(.*\)$/, '') || nom;
 
 /** Dégradé d'orange : plus l'enfant grandit, plus la teinte est profonde */
 const COULEURS_AGES = ['#F2B254', '#EC9A2E', '#E07B00', '#C76A00', '#A85700'];
@@ -20,29 +20,36 @@ function decaler(mois: string, n: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/** Écran 2 : la crèche prépare ses ateliers et appelle les familles */
-/** crecheFixe : compte crèche, seule sa crèche est visible */
-export default function Creches({ store, crecheFixe }: { store: Store; crecheFixe?: string }) {
-  const { regions, localites, quartiers, creches, enfants, presences, ateliers } = store.donnees;
-  // Ville de départ : celle de la crèche du compte, sinon la première
-  const villeDepart = localites.find((l) => l.id === creches.find((c) => c.id === crecheFixe)?.localiteId) ?? localites[0];
+/**
+ * Écran 2 : la structure (crèche, école préscolaire ou centre social)
+ * prépare ses ateliers et appelle les familles de sa zone.
+ * structureFixe : compte structure, seule sa structure est visible.
+ */
+export default function Structures({ store, structureFixe }: { store: Store; structureFixe?: string }) {
+  const { regions, localites, quartiers, structures, enfants, presences, ateliers } = store.donnees;
+  // Ville de départ : celle de la structure du compte, sinon la première
+  const villeDepart = localites.find((l) => l.id === structures.find((c) => c.id === structureFixe)?.localiteId) ?? localites[0];
   const [regionId, setRegionId] = useState(villeDepart?.regionId ?? '');
   const villesRegion = localites.filter((l) => l.regionId === regionId);
   const [localiteId, setLocaliteId] = useState(villeDepart?.id ?? '');
-  // Par défaut : première crèche de la localité, pour voir tout de suite une liste
-  const premiereCreche = (loc: string) => creches.find((c) => c.localiteId === loc)?.id ?? '';
-  const [crecheId, setCrecheId] = useState(() => crecheFixe ?? premiereCreche(localites[0]?.id ?? ''));
+  // Filtre « Type de structure » ('' : toutes)
+  const [typeFiltre, setTypeFiltre] = useState('');
+  const [gestion, setGestion] = useState(false);
+  // Par défaut : première structure de la localité, pour voir tout de suite une liste
+  const premiereStructure = (loc: string, type = typeFiltre) => structures.find((c) => c.localiteId === loc && (!type || c.type === type))?.id ?? '';
+  const [structureId, setStructureId] = useState(() => structureFixe ?? premiereStructure(villeDepart?.id ?? ''));
   const [quartierId, setQuartierId] = useState('');
   const [mois, setMois] = useState(moisCourant());
 
-  const crechesLoc = creches.filter((c) => c.localiteId === localiteId);
-  const quartiersLoc = quartiers.filter((q) => q.localiteId === localiteId && (!crecheId || q.crecheId === crecheId));
+  const structuresLoc = structures.filter((c) => c.localiteId === localiteId && (!typeFiltre || c.type === typeFiltre));
+  // Quartiers de la ville couverts par la structure choisie (ou par une structure du type choisi)
+  const quartiersLoc = quartiers.filter((q) => q.localiteId === localiteId && (structureId ? q.structureId === structureId : !typeFiltre || structuresLoc.some((s) => s.id === q.structureId)));
   const ref = dateAtelier(mois);
 
-  // Quartiers concernés : le quartier choisi, ou tous ceux de la crèche
-  const quartiersCibles = quartierId ? quartiers.filter((q) => q.id === quartierId) : crecheId ? quartiersLoc : [];
+  // Quartiers concernés : le quartier choisi, ou tous ceux de la structure
+  const quartiersCibles = quartierId ? quartiers.filter((q) => q.id === quartierId) : structureId ? quartiersLoc : [];
   const idsCibles = new Set(quartiersCibles.map((q) => q.id));
-  const creche = creches.find((c) => c.id === (crecheId || quartiersCibles[0]?.crecheId));
+  const structure = structures.find((c) => c.id === (structureId || quartiersCibles[0]?.structureId));
 
   // Regroupement automatique par tranche d'âge à la date de l'atelier
   const groupes = new Map<TrancheId, Enfant[]>(TRANCHES.map((t) => [t, []]));
@@ -54,7 +61,7 @@ export default function Creches({ store, crecheFixe }: { store: Store; crecheFix
   for (const liste of groupes.values()) liste.sort((a, b) => a.dateNaissance.localeCompare(b.dateNaissance));
 
   const total = [...groupes.values()].reduce((a, l) => a + l.length, 0);
-  // Indicateurs de la crèche pour le mois choisi
+  // Indicateurs de la structure pour le mois choisi
   const tousEnfants = [...groupes.values()].flat();
   // Enfants reçus de la mairie depuis moins de 30 jours (tous âges 0-5 ans du périmètre)
   const limite = Date.now() - 30 * 86400000;
@@ -79,30 +86,34 @@ export default function Creches({ store, crecheFixe }: { store: Store; crecheFix
 
   return (
     <div className="page tdb creches">
-      {/* Bandeau illustré de la crèche */}
+      {/* Bandeau illustré de la structure */}
       <header className="hero hero-creche non-imprime">
         <div className="hero-texte">
-          <span className="hero-etiquette">{creche ? `Crèche ${nomCourt(creche.nom)}` : "Ateliers d'éveil"}</span>
+          <span className="hero-etiquette">{structure ? nomCourt(structure.nom) : "Structures et ateliers"}</span>
+          {structure && <EtiquetteStructure type={structure.type} />}
           <h1>Un enfant,<br />un parcours d'éveil</h1>
           <p>De la naissance au préscolaire, par le jeu</p>
         </div>
-        <img className="hero-image" src="/creche-hero.png" alt="Des enfants jouent aux cubes à la crèche avec une animatrice" />
+        <img className="hero-image" src="/creche-hero.png" alt="Des enfants jouent aux cubes avec une animatrice" />
       </header>
-      {/* Sélection : localité, crèche, quartier, mois */}
+      {/* Sélection : localité, type, structure, quartier, mois */}
       <section className="tri non-imprime" aria-label="Sélection">
         <div className="tri-pastilles">
-          {!crecheFixe && <>
+          {!structureFixe && <>
           <FiltrePastille libelle="Région" valeur={regionId}
             options={regions.map((r) => ({ id: r.id, nom: r.nom }))}
-            onChange={(r) => { const v = localites.find((l) => l.regionId === r)?.id ?? ''; setRegionId(r); setLocaliteId(v); setCrecheId(premiereCreche(v)); setQuartierId(''); }} />
+            onChange={(r) => { const v = localites.find((l) => l.regionId === r)?.id ?? ''; setRegionId(r); setLocaliteId(v); setStructureId(premiereStructure(v)); setQuartierId(''); }} />
           <FiltrePastille libelle="Ville" valeur={localiteId} tous={villesRegion.length ? undefined : 'Aucune'}
             options={villesRegion.map((l) => ({ id: l.id, nom: l.nom }))}
-            onChange={(v) => { setLocaliteId(v); setCrecheId(premiereCreche(v)); setQuartierId(''); }} />
-          <FiltrePastille libelle="Crèche" valeur={crecheId} tous="Toutes"
-            options={crechesLoc.map((c) => ({ id: c.id, nom: nomCourt(c.nom) }))}
-            onChange={(v) => { setCrecheId(v); setQuartierId(''); }} />
+            onChange={(v) => { setLocaliteId(v); setStructureId(premiereStructure(v)); setQuartierId(''); }} />
+          <FiltrePastille libelle="Type de structure" valeur={typeFiltre} tous="Toutes"
+            options={LISTE_TYPES.map((t) => ({ id: t, nom: TYPES_STRUCTURE[t].libelle }))}
+            onChange={(t) => { setTypeFiltre(t); setStructureId(premiereStructure(localiteId, t)); setQuartierId(''); }} />
+          <FiltrePastille libelle="Structure" valeur={structureId} tous="Toutes"
+            options={structuresLoc.map((c) => ({ id: c.id, nom: nomCourt(c.nom) }))}
+            onChange={(v) => { setStructureId(v); setQuartierId(''); }} />
           </>}
-          <FiltrePastille libelle="Quartier" valeur={quartierId} tous={crecheId ? 'Tous' : 'Choisir'}
+          <FiltrePastille libelle="Quartier" valeur={quartierId} tous={structureId ? 'Tous' : 'Choisir'}
             options={quartiersLoc.map((q) => ({ id: q.id, nom: q.nom }))} onChange={setQuartierId} />
         </div>
         <div className="mois-pas" role="group" aria-label="Mois de l'atelier">
@@ -110,11 +121,13 @@ export default function Creches({ store, crecheFixe }: { store: Store; crecheFix
           <span>{libelleMois(mois)}</span>
           <button onClick={() => setMois(decaler(mois, 1))} aria-label="Mois suivant">›</button>
         </div>
+        {!structureFixe && <button className="tri-effacer" onClick={() => setGestion(true)}>Gérer les structures</button>}
       </section>
+      {gestion && <GestionStructures store={store} onFermer={() => setGestion(false)} />}
 
-
+      {structureFixe && !structure && <p className="tdb-vide">Cette structure n'existe pas dans les données de cet appareil.</p>}
       {quartiersCibles.length === 0 ? (
-        <p className="tdb-vide">Choisissez une crèche ou un quartier.</p>
+        <p className="tdb-vide">{structureFixe ? "Aucun quartier n'est couvert par cette structure." : 'Choisissez une structure ou un quartier.'}</p>
       ) : (
         <>
           {/* Enfants transmis automatiquement par la mairie (30 derniers jours) */}
@@ -136,7 +149,7 @@ export default function Creches({ store, crecheFixe }: { store: Store; crecheFix
             </section>
           )}
 
-          {/* Tableau de bord de la crèche */}
+          {/* Tableau de bord de la structure */}
           <div className="tdb-tuiles non-imprime">
             <div className="tdb-tuile"><span className="tdb-libelle">Familles à inviter</span><strong>{total}</strong><span className="tdb-detail">âge au {ref.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span></div>
             <div className="tdb-tuile"><span className="tdb-libelle">Appels faits</span><strong>{pct(nbAppeles)}%</strong><span className="tdb-detail">{nbAppeles} familles appelées</span></div>
@@ -204,7 +217,7 @@ export default function Creches({ store, crecheFixe }: { store: Store; crecheFix
             </section>
           </div>
           <div className="entete-impression">
-            <h2>{creche?.nom ?? 'Crèche'} — atelier de {libelleMois(mois)}</h2>
+            <h2>{structure?.nom ?? 'Structure'} — atelier de {libelleMois(mois)}</h2>
             <p>Quartier{quartiersCibles.length > 1 ? 's' : ''} : {quartiersCibles.map((q) => q.nom).join(', ')} · {total} enfant{total > 1 ? 's' : ''} à inviter · âge calculé au {ref.toLocaleDateString('fr-FR')}</p>
           </div>
           {TRANCHES.map((t) => (

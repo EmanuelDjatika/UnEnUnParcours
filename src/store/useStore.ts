@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Ateliers, Donnees, Enfant, Jeu, Presence, Quartier, TrancheId } from '../types';
+import type { Ateliers, Donnees, Enfant, Jeu, Presence, Quartier, Structure, TrancheId } from '../types';
 import { donneesVides, genererDemo } from '../data/demo';
 
 const CLE = 'un-enfant-un-parcours-eveil:v2';
@@ -36,12 +36,23 @@ export function valider(x: unknown): Donnees | null {
   const o = x as Partial<Donnees>;
   if (!Array.isArray(o.enfants) || !Array.isArray(o.quartiers) || !Array.isArray(o.localites)) return null;
   const base = donneesVides();
+  // Migration : anciennes données avec « creches » / « crecheId »
+  // → les crèches deviennent des structures de type « creche », sans perte
+  const ancien = x as { creches?: Array<Omit<Structure, 'type'>> };
+  const structures: Structure[] = Array.isArray(o.structures)
+    ? o.structures
+    : Array.isArray(ancien.creches)
+      ? ancien.creches.map((c) => ({ ...c, type: 'creche' as const }))
+      : base.structures;
   return {
     regions: Array.isArray(o.regions) ? o.regions : base.regions,
     // anciennes données sans région : on retrouve la région de la ville connue
     localites: o.localites.map((l) => ({ ...l, regionId: l.regionId ?? base.localites.find((b) => b.id === l.id)?.regionId ?? '' })),
-    quartiers: o.quartiers,
-    creches: Array.isArray(o.creches) ? o.creches : base.creches,
+    quartiers: o.quartiers.map((q) => {
+      const { crecheId, ...reste } = q as Quartier & { crecheId?: string };
+      return { ...reste, structureId: q.structureId ?? crecheId ?? '' };
+    }),
+    structures,
     enfants: o.enfants,
     presences: Array.isArray(o.presences) ? o.presences : [],
     ateliers: nettoyerAteliers(o.ateliers),
@@ -104,17 +115,39 @@ export function useStore() {
     }));
   }, []);
 
-  /** Ajoute un quartier ; crée une crèche du même nom si besoin */
-  const ajouterQuartier = useCallback((nom: string, localiteId: string, crecheId: string | null): Quartier => {
-    const nouvelleCreche = crecheId ? null : { id: nouvelId('cr'), nom: `Crèche de ${nom}`, localiteId };
-    const q: Quartier = { id: nouvelId('q'), nom, localiteId, crecheId: crecheId ?? nouvelleCreche!.id };
-    setDonnees((d) => ({
-      ...d,
-      creches: nouvelleCreche ? [...d.creches, nouvelleCreche] : d.creches,
-      quartiers: [...d.quartiers, q],
-    }));
+  /** Ajoute un quartier, couvert par une structure existante ou par aucune ('') */
+  const ajouterQuartier = useCallback((nom: string, localiteId: string, structureId: string): Quartier => {
+    const q: Quartier = { id: nouvelId('q'), nom, localiteId, structureId };
+    setDonnees((d) => ({ ...d, quartiers: [...d.quartiers, q] }));
     return q;
   }, []);
+
+  /**
+   * Ajoute ou modifie une structure et sa zone de couverture.
+   * Un quartier ne peut appartenir qu'à une seule structure : si un quartier
+   * demandé est déjà couvert par une autre, rien n'est enregistré et on renvoie
+   * la liste des conflits (à afficher dans la page).
+   */
+  const enregistrerStructure = useCallback((s: Omit<Structure, 'id'> & { id?: string }, quartierIds: string[]): { structure: Structure } | { conflits: { quartier: Quartier; structure: Structure }[] } => {
+    const structure: Structure = { ...s, id: s.id ?? nouvelId('st') };
+    const conflits = quartierIds.flatMap((qid) => {
+      const q = donnees.quartiers.find((x) => x.id === qid);
+      const autre = q && q.structureId && q.structureId !== structure.id && donnees.structures.find((x) => x.id === q.structureId);
+      return q && autre ? [{ quartier: q, structure: autre }] : [];
+    });
+    if (conflits.length) return { conflits };
+    setDonnees((d) => ({
+      ...d,
+      structures: d.structures.some((x) => x.id === structure.id)
+        ? d.structures.map((x) => (x.id === structure.id ? structure : x))
+        : [...d.structures, structure],
+      // Quartiers cochés → cette structure ; quartiers décochés → plus couverts
+      quartiers: d.quartiers.map((q) =>
+        quartierIds.includes(q.id) ? { ...q, structureId: structure.id }
+          : q.structureId === structure.id ? { ...q, structureId: '' } : q),
+    }));
+    return { structure };
+  }, [donnees]);
 
   /** Modifie une case (appelé / confirmé / venu) pour un enfant et un mois */
   const majPresence = useCallback(
@@ -143,6 +176,7 @@ export function useStore() {
     ajouterEnfant,
     supprimerEnfant,
     ajouterQuartier,
+    enregistrerStructure,
     majPresence,
     majAteliers,
     chargerDemo,

@@ -1,7 +1,8 @@
-import type { Creche, Donnees, Enfant, Langue, Localite, Presence, Quartier, Region, Sexe } from '../types';
+import type { Donnees, Enfant, Langue, Localite, Presence, Quartier, Region, Sexe, Structure } from '../types';
 import { ATELIERS_PAR_DEFAUT } from './ateliers';
 
-// Données de démonstration : 60 enfants fictifs, 2 localités, 6 quartiers, 4 crèches.
+// Données de démonstration : 60 enfants fictifs, 2 localités, 6 quartiers, 4 structures
+// (2 crèches, 1 école préscolaire, 1 centre social).
 // Tous les noms et numéros sont inventés (+228 90 00 00 xx).
 
 // Les 5 régions du Togo
@@ -19,20 +20,20 @@ export const LOCALITES_BASE: Localite[] = [
   { id: 'kara', nom: 'Kara', regionId: 'r-kara' },
 ];
 
-export const CRECHES_BASE: Creche[] = [
-  { id: 'cr-be-tokoin', nom: 'Crèche Les Petits Pas (Bè-Tokoin)', localiteId: 'lome' },
-  { id: 'cr-agoe-adido', nom: 'Crèche Soleil (Agoè-Adidogomé)', localiteId: 'lome' },
-  { id: 'cr-kara-sud', nom: 'Crèche Espoir (Kara-Sud)', localiteId: 'kara' },
-  { id: 'cr-tomde', nom: 'Crèche Arc-en-ciel (Tomdè)', localiteId: 'kara' },
+export const STRUCTURES_BASE: Structure[] = [
+  { id: 'cr-be-tokoin', nom: 'Crèche Les Petits Pas', type: 'creche', localiteId: 'lome', animatrice: 'Akouvi Mensah' },
+  { id: 'st-ecole-tokoin', nom: 'École préscolaire de Tokoin', type: 'ecole_prescolaire', localiteId: 'lome', animatrice: 'Dzifa Lawson' },
+  { id: 'st-centre-agoe', nom: "Centre social d'Agoè", type: 'centre_social', localiteId: 'lome', animatrice: 'Massan Akakpo' },
+  { id: 'cr-kara-sud', nom: 'Crèche Espoir', type: 'creche', localiteId: 'kara', animatrice: 'Essohanam Tchalla' },
 ];
 
 export const QUARTIERS_BASE: Quartier[] = [
-  { id: 'q-be', nom: 'Bè', localiteId: 'lome', crecheId: 'cr-be-tokoin' },
-  { id: 'q-tokoin', nom: 'Tokoin', localiteId: 'lome', crecheId: 'cr-be-tokoin' },
-  { id: 'q-agoe', nom: 'Agoè', localiteId: 'lome', crecheId: 'cr-agoe-adido' },
-  { id: 'q-adidogome', nom: 'Adidogomé', localiteId: 'lome', crecheId: 'cr-agoe-adido' },
-  { id: 'q-kara-sud', nom: 'Kara-Sud', localiteId: 'kara', crecheId: 'cr-kara-sud' },
-  { id: 'q-tomde', nom: 'Tomdè', localiteId: 'kara', crecheId: 'cr-tomde' },
+  { id: 'q-be', nom: 'Bè', localiteId: 'lome', structureId: 'cr-be-tokoin' },
+  { id: 'q-tokoin', nom: 'Tokoin', localiteId: 'lome', structureId: 'st-ecole-tokoin' },
+  { id: 'q-agoe', nom: 'Agoè', localiteId: 'lome', structureId: 'st-centre-agoe' },
+  { id: 'q-adidogome', nom: 'Adidogomé', localiteId: 'lome', structureId: 'st-centre-agoe' },
+  { id: 'q-kara-sud', nom: 'Kara-Sud', localiteId: 'kara', structureId: 'cr-kara-sud' },
+  { id: 'q-tomde', nom: 'Tomdè', localiteId: 'kara', structureId: 'cr-kara-sud' },
 ];
 
 const PRENOMS_F = ['Akossiwa', 'Adjoa', 'Ama', 'Abla', 'Afi', 'Yawa', 'Essi', 'Enyonam', 'Mawuena', 'Delali', 'Kafui', 'Sena', 'Pélagie', 'Essowè', 'Maba', 'Pidénam'];
@@ -65,7 +66,6 @@ export function genererDemo(): Donnees {
     const sud = quartier.localiteId === 'lome';
     const sexe: Sexe = rnd() < 0.5 ? 'F' : 'M';
     const nom = choisir(sud ? NOMS_SUD : NOMS_NORD);
-    // Âge réparti régulièrement sur les 6 dernières années (de 0 à 71 mois)
     // Âge réparti sur les 5 dernières années (0 à 5 ans)
     const ageJours = Math.floor(((i * 37) % 60) / 60 * 5 * 365 + rnd() * 30);
     const naissance = new Date(auj.getFullYear(), auj.getMonth(), auj.getDate() - ageJours);
@@ -101,7 +101,7 @@ export function genererDemo(): Donnees {
   return {
     regions: [...REGIONS_BASE],
     localites: [...LOCALITES_BASE],
-    creches: [...CRECHES_BASE],
+    structures: [...STRUCTURES_BASE],
     quartiers: [...QUARTIERS_BASE],
     enfants,
     presences,
@@ -114,7 +114,7 @@ export function donneesVides(): Donnees {
   return {
     regions: [...REGIONS_BASE],
     localites: [...LOCALITES_BASE],
-    creches: [...CRECHES_BASE],
+    structures: [...STRUCTURES_BASE],
     quartiers: [...QUARTIERS_BASE],
     enfants: [],
     presences: [],

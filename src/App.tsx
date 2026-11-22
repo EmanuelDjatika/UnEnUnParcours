@@ -5,7 +5,7 @@ import { ACCUEIL } from './data/comptes';
 import type { Compte, Role } from './data/comptes';
 import Connexion from './pages/Connexion';
 import Mairie from './pages/Mairie';
-import Creches from './pages/Creches';
+import Structures from './pages/Structures';
 import Jeux from './pages/Jeux';
 import TableauDeBord from './pages/TableauDeBord';
 import ListeEnfants from './components/ListeEnfants';
@@ -13,17 +13,17 @@ import LogoEnfant from './components/LogoEnfant';
 
 /*
   Trois espaces, chacun avec ses chemins :
-  - Administration : /admin, /admin/enfants, /admin/prescolaire, /admin/creches
+  - Administration : /admin, /admin/enfants, /admin/prescolaire, /admin/structures
   - Mairie         : /mairie, /mairie/enregistrer, /mairie/enfants, /mairie/prescolaire
-  - Crèche         : /creche
+  - Structure      : /structure, /structure/jeux (crèche, école préscolaire ou centre social)
   Sans connexion   : /connexion
 */
 
 /** Chemins autorisés pour un compte */
 function cheminsAutorises(c: Compte): string[] {
-  if (c.role === 'admin') return ['/admin', '/admin/enfants', '/admin/prescolaire', '/admin/creches'];
+  if (c.role === 'admin') return ['/admin', '/admin/enfants', '/admin/prescolaire', '/admin/structures'];
   if (c.role === 'mairie') return ['/mairie', '/mairie/enregistrer', '/mairie/enfants', '/mairie/prescolaire'];
-  return ['/creche', '/creche/jeux'];
+  return ['/structure', '/structure/jeux'];
 }
 
 const cheminActuel = () => window.location.pathname.replace(/\/+$/, '') || '/';
@@ -46,8 +46,8 @@ export default function App() {
     return () => window.removeEventListener('popstate', f);
   }, []);
 
-  // Espace visé par l'adresse : /admin…, /mairie…, /creche…
-  const roleChemin: Role | undefined = (['admin', 'mairie', 'creche'] as Role[]).find((r) => chemin === ACCUEIL[r] || chemin.startsWith(ACCUEIL[r] + '/'));
+  // Espace visé par l'adresse : /admin…, /mairie…, /structure…
+  const roleChemin: Role | undefined = (['admin', 'mairie', 'structure'] as Role[]).find((r) => chemin === ACCUEIL[r] || chemin.startsWith(ACCUEIL[r] + '/'));
   const pageConnexion = chemin === '/' || chemin === '/connexion' || chemin.endsWith('/connexion');
 
   // Garde :
@@ -65,9 +65,10 @@ export default function App() {
   if (cible === '/' || cible.endsWith('/connexion')) {
     const roleConnexion = cible === '/' ? undefined : roleChemin;
     return (
-      <div className="app">
+      <div className="app app-connexion">
         <Connexion key={roleConnexion ?? 'choix'} role={roleConnexion}
           onChoisirEspace={(r) => aller(`${ACCUEIL[r]}/connexion`)}
+          onRetour={() => aller('/')}
           onConnecter={(id, mdp) => {
             // On n'accepte que les comptes de l'espace de cette page
             const c = connecter(id, mdp, roleConnexion);
@@ -93,11 +94,11 @@ export default function App() {
           <LogoEnfant taille={40} />
           <span>{compte.nom}</span>
         </button>
-        {/* Navigation de l'espace crèche */}
-        {compte.role === 'creche' && (
-          <nav className="bc-nav" aria-label="Espace crèche">
-            <button className={cible === '/creche' ? 'actif' : ''} onClick={() => aller('/creche')}>Familles</button>
-            <button className={cible === '/creche/jeux' ? 'actif' : ''} onClick={() => aller('/creche/jeux')}>Jeux</button>
+        {/* Navigation de l'espace structure */}
+        {compte.role === 'structure' && (
+          <nav className="bc-nav" aria-label="Espace structure">
+            <button className={cible === '/structure' ? 'actif' : ''} onClick={() => aller('/structure')}>Familles</button>
+            <button className={cible === '/structure/jeux' ? 'actif' : ''} onClick={() => aller('/structure/jeux')}>Jeux</button>
           </nav>
         )}
         <button className="bc-deco" onClick={() => { const r = compte.role; deconnecter(); aller(`${ACCUEIL[r]}/connexion`); }}>Se déconnecter</button>
@@ -110,6 +111,8 @@ export default function App() {
             <span className="hero-etiquette">{compte.nom}</span>
             <h1>Un enfant,<br />un parcours d'éveil</h1>
             <p>De la naissance au préscolaire, par le jeu</p>
+            {/* Administration : accès aux structures et ateliers depuis le bandeau */}
+            {compte.role === 'admin' && <button className="tdb-secondaire hero-bouton" onClick={() => aller('/admin/structures')}>Structures et ateliers ›</button>}
           </div>
           <img className="hero-image" src="/eveil-hero.png" alt="Une maman et son enfant jouent avec un tuyau à balle fabriqué en carton" />
         </header>
@@ -118,10 +121,10 @@ export default function App() {
       <main>
         {/* Administration : tout voir, sans enregistrer */}
         {cible === '/admin' && (
-          <TableauDeBord store={store} onCreches={() => aller('/admin/creches')}
+          <TableauDeBord store={store} onStructures={() => aller('/admin/structures')}
             onEnfants={(p) => aller(p ? '/admin/prescolaire' : '/admin/enfants')} />
         )}
-        {cible === '/admin/creches' && <Creches store={store} />}
+        {cible === '/admin/structures' && <Structures store={store} />}
 
         {/* Mairie : sa ville seulement */}
         {cible === '/mairie' && (
@@ -138,9 +141,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Crèche : sa crèche seulement */}
-        {cible === '/creche' && <Creches store={store} crecheFixe={compte.crecheId} />}
-        {cible === '/creche/jeux' && <Jeux store={store} />}
+        {/* Structure : sa zone seulement */}
+        {cible === '/structure' && <Structures store={store} structureFixe={compte.structureId} />}
+        {cible === '/structure/jeux' && <Jeux store={store} />}
       </main>
 
       <footer className="pied non-imprime">Prototype hackathon UNICEF Togo · fonctionne hors ligne</footer>

@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { Langue, Sexe } from '../types';
+import type { Langue, Sexe, Structure } from '../types';
 import { LANGUES } from '../types';
 import type { Store } from '../store/useStore';
 import { aujourdhui } from '../utils/age';
+import EtiquetteStructure, { nomAvecType } from './EtiquetteStructure';
 
 const NOUVEAU = '__nouveau__';
 
 /** Formulaire d'enregistrement d'une naissance à la mairie */
 /** villeFixe : compte mairie, la ville est imposée */
 export default function FormulaireNaissance({ store, villeFixe, onTermine }: { store: Store; villeFixe?: string; onTermine?: () => void }) {
-  // Fenêtre après enregistrement : chargement → succès (avec la crèche destinataire)
-  const [popup, setPopup] = useState<{ etat: 'chargement' | 'succes'; prenom: string; creche: string } | null>(null);
+  // Fenêtre après enregistrement : chargement → succès (avec la structure destinataire)
+  const [popup, setPopup] = useState<{ etat: 'chargement' | 'succes'; prenom: string; structure?: Structure } | null>(null);
   useEffect(() => {
     if (popup?.etat !== 'chargement') return;
     const t = setTimeout(() => setPopup((p) => (p ? { ...p, etat: 'succes' } : p)), 1400);
     return () => clearTimeout(t);
   }, [popup?.etat]);
 
-  const { regions, localites, quartiers, creches } = store.donnees;
+  const { regions, localites, quartiers, structures } = store.donnees;
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
   const [sexe, setSexe] = useState<Sexe | ''>('');
@@ -32,14 +33,15 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
   const villesRegion = localites.filter((l) => l.regionId === regionId);
   const [quartierId, setQuartierId] = useState('');
   const [nouveauQuartier, setNouveauQuartier] = useState('');
-  const [crecheNouveau, setCrecheNouveau] = useState('');
+  const [structureNouveau, setStructureNouveau] = useState('');
   const [consentement, setConsentement] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
 
   const quartiersLocalite = quartiers.filter((q) => q.localiteId === localiteId);
-  const crechesLocalite = creches.filter((c) => c.localiteId === localiteId);
+  const structuresLocalite = structures.filter((c) => c.localiteId === localiteId);
   const quartierChoisi = quartiers.find((q) => q.id === quartierId);
-  const crecheDuQuartier = quartierChoisi && creches.find((c) => c.id === quartierChoisi.crecheId);
+  // Structure qui couvre le quartier : c'est elle qui recevra la fiche
+  const structureDuQuartier = quartierChoisi ? structures.find((c) => c.id === quartierChoisi.structureId) : undefined;
 
   function enregistrer(e: FormEvent) {
     e.preventDefault();
@@ -61,7 +63,7 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
         setMessage({ ok: false, texte: 'Indiquez le nom du nouveau quartier.' });
         return;
       }
-      qId = store.ajouterQuartier(nouveauQuartier.trim(), localiteId, crecheNouveau || null).id;
+      qId = store.ajouterQuartier(nouveauQuartier.trim(), localiteId, structureNouveau).id;
     }
     store.ajouterEnfant({
       prenom: prenom.trim(),
@@ -75,16 +77,14 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
       quartierId: qId,
       consentement: true,
     });
-    // Transmission automatique : le quartier est rattaché à une crèche
-    const nomCreche = quartierId === NOUVEAU
-      ? (creches.find((c) => c.id === crecheNouveau)?.nom ?? `Crèche de ${nouveauQuartier.trim()}`)
-      : crecheDuQuartier?.nom;
+    // Transmission automatique : la structure qui couvre le quartier reçoit la fiche
+    const destinataire = quartierId === NOUVEAU ? structures.find((c) => c.id === structureNouveau) : structureDuQuartier;
     setMessage(null);
-    setPopup({ etat: 'chargement', prenom: prenom.trim(), creche: nomCreche ?? 'la crèche du quartier' });
+    setPopup({ etat: 'chargement', prenom: prenom.trim(), structure: destinataire });
     // On garde localité et quartier pour enchaîner les saisies
     setPrenom(''); setNom(''); setSexe(''); setDateNaissance('');
     setParentNom(''); setParentTelephone('+228 '); setConsentement(false);
-    setQuartierId(qId); setNouveauQuartier(''); setCrecheNouveau('');
+    setQuartierId(qId); setNouveauQuartier(''); setStructureNouveau('');
   }
 
   return (
@@ -156,21 +156,22 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
               <label className="champ"><span>Nom du nouveau quartier</span>
                 <input value={nouveauQuartier} onChange={(e) => setNouveauQuartier(e.target.value)} />
               </label>
-              <label className="champ"><span>Crèche de rattachement</span>
-                <select value={crecheNouveau} onChange={(e) => setCrecheNouveau(e.target.value)}>
-                  <option value="">Nouvelle crèche pour ce quartier</option>
-                  {crechesLocalite.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
+              <label className="champ"><span>Structure de rattachement</span>
+                <select value={structureNouveau} onChange={(e) => setStructureNouveau(e.target.value)}>
+                  <option value="">Aucune pour l'instant</option>
+                  {structuresLocalite.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
                 </select>
               </label>
             </>
           )}
         </div>
-        {crecheDuQuartier && <p className="aide">Crèche du quartier : <strong>{crecheDuQuartier.nom}</strong></p>}
+        {structureDuQuartier && <p className="aide aide-structure">Structure du quartier : <strong>{structureDuQuartier.nom}</strong> <EtiquetteStructure type={structureDuQuartier.type} /></p>}
+        {quartierChoisi && !structureDuQuartier && <p className="aide">Ce quartier n'est encore couvert par aucune structure.</p>}
       </fieldset>
 
       <label className={`consentement ${consentement ? 'ok' : ''}`}>
         <input type="checkbox" checked={consentement} onChange={(e) => setConsentement(e.target.checked)} />
-        <span>Le parent accepte d'être contacté par la crèche du quartier</span>
+        <span>Le parent accepte d'être contacté par la structure du quartier</span>
       </label>
 
       {message && <p className={`message ${message.ok ? 'succes' : 'erreur'}`} role="status">{message.texte}</p>}
@@ -185,7 +186,7 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
               <>
                 <div className="popup-spinner" aria-hidden="true" />
                 <h2>Enregistrement…</h2>
-                <p>Transmission à la crèche du quartier</p>
+                <p>Transmission à la structure du quartier</p>
               </>
             ) : (
               <>
@@ -194,7 +195,10 @@ export default function FormulaireNaissance({ store, villeFixe, onTermine }: { s
                   <path d="M15 27l7 7 15-16" />
                 </svg>
                 <h2>{popup.prenom} est enregistré(e)</h2>
-                <p>Transmis(e) automatiquement à <strong>{popup.creche}</strong>.</p>
+                {popup.structure ? <>
+                  <p>Envoyé à <strong>{nomAvecType(popup.structure)}</strong></p>
+                  <EtiquetteStructure type={popup.structure.type} />
+                </> : <p>Aucune structure ne couvre encore ce quartier : la fiche sera transmise dès qu'une structure le couvrira.</p>}
                 <p className="popup-question">Enregistrer un autre enfant ?</p>
                 <div className="popup-actions">
                   <button type="button" className="btn-sobre" onClick={() => { setPopup(null); onTermine?.(); }}>Non, tableau de bord</button>

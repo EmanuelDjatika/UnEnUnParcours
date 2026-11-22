@@ -49,13 +49,13 @@ src/
 
 ## Les trois espaces et les comptes de démonstration
 
-Chaque espace a sa page de connexion, avec les identifiants préremplis (prototype) : `/admin/connexion`, `/mairie/connexion`, `/creche/connexion`. La racine `/` propose de choisir l'espace.
+Chaque espace a sa page de connexion, avec les identifiants préremplis (prototype) : `/admin/connexion`, `/mairie/connexion`, `/structure/connexion`. La racine `/` propose de choisir l'espace.
 
 | Espace | Adresse | Identifiant | Mot de passe | Ce qu'on y voit |
 |---|---|---|---|---|
 | Administration | `/admin` | `admin` | `admin2026` | Tout : toutes les régions, villes, crèches |
 | Mairie de Lomé | `/mairie` | `mairie-lome` | `lome2026` | Sa ville : tableau de bord, enregistrement, liste des enfants |
 | Mairie de Kara | `/mairie` | `mairie-kara` | `kara2026` | Idem pour Kara |
-| Crèches | `/creche` | `creche-petits-pas`, `creche-soleil`, `creche-espoir`, `creche-arc-en-ciel` | `creche2026` | Sa crèche : tableau de bord et listes d'appels |
+| Structures (crèche, école préscolaire, centre social) | `/structure` | `creche-petits-pas`, `ecole-tokoin`, `centre-agoe`, `creche-espoir` | `eveil2026` | Sa structure : enfants des quartiers couverts, listes d’appels, jeux |
 
 ⚠️ Prototype sans serveur : les comptes sont dans le code (`src/data/comptes.ts`) et les données restent sur l'appareil. Ce n'est pas une vraie sécurité ; en production, il faut un serveur d'authentification et une base de données partagée.
