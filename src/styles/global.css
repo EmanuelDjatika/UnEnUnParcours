@@ -1,0 +1,713 @@
+/* Styles globaux — « Un enfant, un parcours d'éveil » */
+
+:root {
+  --creme: #FDF7EB;
+  --orange: #E07B00;
+  --orange-clair: #FCE9CF;
+  --vert: #2E9E4F;
+  --vert-clair: #DDF2E3;
+  --bleu: #2E86DE;
+  --bleu-clair: #DCEBFA;
+  --violet: #8E44AD;
+  --violet-clair: #EFE1F5;
+  --rouge: #C0392B;
+  --rouge-clair: #F8DEDB;
+  --texte: #1E2A4A;
+  --texte-doux: #5A6482;
+  --blanc: #FFFFFF;
+  --trait: #EADFCB;
+  --ombre: 0 2px 10px rgba(30, 42, 74, 0.07);
+  --rayon: 18px;
+  --police: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--creme);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 0.6em; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.1rem; }
+a { color: var(--bleu); }
+
+.app { max-width: 1180px; margin: 0 auto; padding: 0 16px 32px; }
+
+/* En-tête et onglets */
+.entete { padding: 20px 0 8px; }
+.titre { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.titre h1 { font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 800; margin: 0; }
+.titre p { margin: 2px 0 0; color: var(--orange); font-weight: 600; }
+.logo { flex: none; display: flex; }
+
+.onglets { display: flex; gap: 8px; flex-wrap: wrap; }
+.onglets button {
+  flex: 1 1 auto;
+  font: inherit; font-weight: 700;
+  padding: 14px 18px;
+  border: none; border-radius: 14px;
+  background: var(--blanc); color: var(--texte);
+  box-shadow: var(--ombre);
+  cursor: pointer; min-height: 52px;
+}
+.onglets button.actif { background: var(--orange); color: #fff; }
+.onglets button:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+
+/* Barre de gestion des données */
+.barre-donnees {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 14px 0; padding: 12px 16px;
+  background: var(--blanc); border-radius: var(--rayon); box-shadow: var(--ombre);
+}
+.barre-donnees .message { flex-basis: 100%; margin: 0; cursor: pointer; }
+
+/* Cartes */
+.page { display: flex; flex-direction: column; gap: 18px; }
+.carte { background: var(--blanc); border-radius: var(--rayon); padding: 20px; box-shadow: var(--ombre); }
+.intro { margin: 0; color: var(--texte-doux); }
+
+/* Boutons */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  font: inherit; font-weight: 700;
+  border: none; border-radius: 14px;
+  padding: 12px 20px; min-height: 48px;
+  cursor: pointer; transition: filter 0.15s, transform 0.05s;
+}
+.btn:hover:not(:disabled) { filter: brightness(0.95); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+.btn-principal { background: var(--orange); color: #fff; }
+.btn-vert { background: var(--vert); color: #fff; }
+.btn-bleu { background: var(--bleu); color: #fff; }
+.btn-secondaire { background: var(--orange-clair); color: var(--texte); }
+.btn-danger { background: var(--rouge); color: #fff; }
+.btn-danger-doux { background: var(--rouge-clair); color: var(--rouge); }
+.btn-large { width: 100%; font-size: 1.1rem; min-height: 58px; }
+.btn-petit { padding: 8px 14px; min-height: 42px; font-size: 0.92rem; }
+.btn-lien { background: none; border: none; color: var(--rouge); font: inherit; font-size: 0.9rem; cursor: pointer; text-decoration: underline; padding: 6px; }
+
+/* Formulaires */
+fieldset { border: none; padding: 0; margin: 0 0 18px; }
+legend { font-weight: 800; color: var(--orange); margin-bottom: 8px; padding: 0; }
+.grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.champ { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 0.95rem; }
+.champ input, .champ select, .champ textarea {
+  font: inherit; font-weight: 400; color: var(--texte);
+  padding: 11px 12px; min-height: 48px;
+  border: 2px solid var(--trait); border-radius: 12px; background: #FFFDF8;
+  width: 100%;
+}
+.champ textarea { resize: vertical; }
+.champ input:focus, .champ select:focus, .champ textarea:focus { outline: none; border-color: var(--bleu); }
+.choix { display: flex; gap: 8px; }
+.pastille {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 48px; border-radius: 12px; border: 2px solid var(--trait);
+  font-weight: 600; cursor: pointer; background: #FFFDF8;
+}
+.pastille.actif { border-color: var(--orange); background: var(--orange-clair); }
+/* Rond radio natif masqué (reste accessible au clavier) : la pastille montre le choix */
+.champ .pastille input {
+  position: absolute; opacity: 0; width: 1px; height: 1px; min-height: 0; padding: 0; margin: 0; border: 0;
+}
+.pastille { position: relative; }
+.pastille:focus-within { outline: 3px solid var(--bleu); outline-offset: 2px; }
+.pastille.actif { color: var(--orange); font-weight: 800; }
+.aide { color: var(--texte-doux); font-size: 0.92rem; margin: 8px 0 0; }
+
+.consentement {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; margin-bottom: 16px;
+  border-radius: 14px; background: var(--rouge-clair);
+  font-weight: 600; cursor: pointer;
+}
+.consentement.ok { background: var(--vert-clair); }
+.consentement input { width: 26px; height: 26px; flex: none; accent-color: var(--vert); margin: 0; }
+
+.message { padding: 10px 14px; border-radius: 12px; font-weight: 600; }
+.message.succes { background: var(--vert-clair); color: #1D6B35; }
+.message.erreur { background: var(--rouge-clair); color: var(--rouge); }
+
+/* Filtres */
+.filtres { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+
+/* Tableaux */
+.compteur { font-size: 0.9rem; font-weight: 600; color: var(--texte-doux); background: var(--creme); padding: 2px 10px; border-radius: 99px; margin-left: 6px; }
+.table-defile { overflow-x: auto; }
+.tableau { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.tableau th { text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--texte-doux); padding: 8px; border-bottom: 2px solid var(--trait); }
+.tableau td { padding: 10px 8px; border-bottom: 1px solid #F3EBDC; vertical-align: middle; }
+.tableau tr:last-child td { border-bottom: none; }
+.tableau td.case { text-align: center; }
+.tableau input[type='checkbox'] { width: 26px; height: 26px; accent-color: var(--vert); cursor: pointer; }
+.sexe { display: inline-block; font-size: 0.75rem; font-weight: 700; border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
+.sexe-F { background: var(--violet-clair); color: var(--violet); }
+.sexe-M { background: var(--bleu-clair); color: #1B5E9E; }
+.vide { color: var(--texte-doux); text-align: center; margin: 12px 0; }
+
+/* Groupes d'atelier */
+.groupe { border-top: 6px solid var(--orange); }
+.groupe-tete { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.groupe-tete h3 { margin: 0; display: flex; align-items: center; gap: 10px; }
+.badge { color: #fff; padding: 4px 12px; border-radius: 99px; font-size: 0.95rem; }
+.jeux { margin: 10px 0 12px; padding: 10px 14px; background: var(--creme); border-radius: 12px; }
+.alerte-presco {
+  display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 8px;
+  background: var(--violet-clair); color: var(--violet); font-size: 0.78rem; font-weight: 700;
+}
+.entete-impression h2 { margin-bottom: 4px; }
+.entete-impression p { margin: 0; color: var(--texte-doux); }
+
+/* Tableau de bord */
+.chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.chiffre { border-top: 6px solid var(--orange); display: flex; flex-direction: column; }
+.chiffre strong { font-size: 2.2rem; font-weight: 800; }
+.chiffre span { color: var(--texte-doux); }
+.grille-graphiques { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 18px; }
+.graphique { margin: 0; }
+.graphique figcaption { font-weight: 800; margin-bottom: 8px; }
+.graphique svg { width: 100%; height: auto; display: block; }
+.g-libelle { font-size: 13px; fill: var(--texte); font-family: var(--police); font-weight: 600; }
+.g-valeur { font-size: 13px; fill: var(--texte); font-family: var(--police); font-weight: 700; }
+.g-fond { fill: #F6EFE1; }
+.legende { display: flex; gap: 16px; font-size: 0.9rem; margin-bottom: 6px; }
+.legende i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* Fenêtre de confirmation */
+.modal-fond {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(30, 42, 74, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal { max-width: 440px; width: 100%; }
+.modal .actions { justify-content: flex-end; margin-top: 16px; }
+
+.pied { text-align: center; color: var(--texte-doux); font-size: 0.85rem; margin-top: 32px; }
+
+/* Téléphone : les tableaux deviennent des fiches */
+@media (max-width: 720px) {
+  body { font-size: 16px; }
+  .carte { padding: 16px; }
+  .onglets button { padding: 12px 10px; font-size: 0.95rem; }
+  .barre-donnees .actions .btn { flex: 1 1 45%; }
+  .tableau thead { display: none; }
+  .tableau, .tableau tbody, .tableau tr, .tableau td { display: block; width: 100%; }
+  .tableau tr { padding: 10px 0; border-bottom: 2px solid var(--trait); }
+  .tableau td { border: none; padding: 4px 0; display: flex; justify-content: space-between; gap: 12px; text-align: right; }
+  .tableau td::before { content: attr(data-titre); font-weight: 600; color: var(--texte-doux); text-align: left; }
+  .tableau td.case { justify-content: space-between; }
+}
+
+/* Impression A4 : seule la liste d'appels est imprimée */
+.entete-impression { display: none; }
+@media print {
+  @page { size: A4; margin: 14mm 12mm; }
+  body { background: #fff; font-size: 11pt; }
+  .app { max-width: none; padding: 0; }
+  .non-imprime, .pied, .modal-fond { display: none !important; }
+  .entete-impression { display: block; margin-bottom: 8mm; }
+  .page { gap: 6mm; }
+  .carte { box-shadow: none; padding: 0; border-radius: 0; }
+  .groupe { border-top: 2px solid #999 !important; padding-top: 3mm; break-inside: avoid-page; }
+  .groupe .vide { display: none; }
+  .badge { color: #000 !important; background: none !important; border: 1px solid #000; }
+  .jeux { background: none; padding: 0; }
+  .table-defile { overflow: visible; }
+  .tableau { font-size: 10pt; }
+  .tableau thead { display: table-header-group; }
+  .tableau th, .tableau td { border: 1px solid #999; padding: 4px 6px; }
+  .tableau td::before { content: none; }
+  .tableau a { color: #000; text-decoration: none; }
+  .alerte-presco { border: 1px solid #000; background: none; color: #000; }
+  .tableau input[type='checkbox'] { width: 14px; height: 14px; }
+}
+
+/* ===== Tableau de bord — style épuré façon Apple ===== */
+.tdb {
+  --tdb-police: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif;
+  --tdb-gris: #86868B;
+  --tdb-ombre: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 28px rgba(0, 0, 0, 0.06);
+  font-family: var(--tdb-police);
+  gap: 22px;
+  -webkit-font-smoothing: antialiased;
+}
+.tdb-tete { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+.tdb-date { margin: 0; color: var(--tdb-gris); font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.tdb-titre { margin: 2px 0 0; font-size: clamp(2rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.025em; }
+.tdb-vide { margin: 0; color: var(--tdb-gris); }
+
+
+/* Tuiles de chiffres */
+.tdb-tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; }
+.tdb-tuile, .tdb-carte, .tdb .graphique {
+  background: #fff; border-radius: 22px; box-shadow: var(--tdb-ombre); padding: 22px 24px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.tdb-tuile:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 14px 36px rgba(0,0,0,.09); }
+.tdb-tuile { display: flex; flex-direction: column; gap: 2px; position: relative; }
+
+.tdb-libelle { font-size: 0.9rem; font-weight: 600; color: var(--texte); }
+.tdb-tuile strong { font-size: 2.9rem; font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.tdb-detail { font-size: 0.82rem; color: var(--tdb-gris); }
+
+/* Cartes */
+.tdb-carte-tete { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.tdb-carte-tete h3, .tdb .graphique figcaption { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; }
+.tdb .graphique figcaption { margin-bottom: 14px; }
+.tdb .legende { color: var(--tdb-gris); font-size: 0.82rem; }
+.tdb .legende i { border-radius: 50%; width: 9px; height: 9px; }
+.tdb-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; }
+
+/* Anneaux de participation */
+.tdb-anneaux { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; }
+.tdb-anneau { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.tdb-anneau strong { font-size: 0.95rem; font-weight: 600; margin-top: 8px; }
+.anneau circle:last-of-type { transition: stroke-dasharray 0.9s cubic-bezier(.2,.8,.2,1); }
+.anneau-valeur { font-family: var(--tdb-police); font-size: 24px; font-weight: 700; letter-spacing: -0.03em; fill: var(--texte); }
+
+/* Colonnes des âges */
+.colonnes { display: flex; gap: 12px; align-items: stretch; height: 230px; }
+.colonne { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.colonne-total { font-size: 0.85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.colonne-piste { flex: 1; width: 100%; max-width: 44px; display: flex; align-items: flex-end; background: #F5F5F7; border-radius: 12px; overflow: hidden; }
+.colonne-barre { width: 100%; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; transition: height 0.6s cubic-bezier(.2,.8,.2,1); }
+.colonne-barre > div { min-height: 0; }
+.colonne-libelle { font-size: 0.75rem; color: var(--tdb-gris); white-space: nowrap; }
+
+.tdb .g-fond { fill: #F5F5F7; }
+.tdb .g-libelle, .tdb .g-valeur { font-family: var(--tdb-police); }
+.tdb .g-libelle { font-weight: 500; }
+
+@media (max-width: 720px) {
+  .colonnes { gap: 6px; height: 190px; }
+  .colonne-libelle { font-size: 0.68rem; }
+}
+
+/* Bouton principal « Enregistrer un enfant » sur le tableau de bord */
+.tdb-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+.tdb-cta {
+  flex: 1 1 340px; display: flex; align-items: center; gap: 18px; text-align: left;
+  font: inherit; color: #fff; cursor: pointer; border: none;
+  padding: 22px 26px; border-radius: 22px;
+  background: var(--orange);
+  box-shadow: 0 10px 30px rgba(224, 123, 0, 0.32);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tdb-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(224, 123, 0, 0.4); }
+.tdb-cta:active { transform: scale(0.99); }
+.tdb-cta:focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
+.tdb-cta strong { display: block; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+.tdb-cta small { display: block; font-size: 0.9rem; opacity: 0.85; }
+.tdb-cta-plus {
+  flex: none; width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 400; line-height: 1;
+}
+.tdb-secondaire {
+  flex: 0 1 auto; font: inherit; font-weight: 600; color: var(--texte); cursor: pointer;
+  border: none; background: #fff; border-radius: 22px; padding: 18px 26px; box-shadow: var(--tdb-ombre);
+}
+.tdb-secondaire:hover { background: #FAFAFA; }
+
+/* Lien de retour vers le tableau de bord */
+.retour {
+  font: inherit; font-weight: 600; color: var(--orange); background: none; border: none;
+  padding: 8px 0; margin: 8px 0 12px; cursor: pointer; font-size: 1rem;
+}
+
+/* Ordre : titre, bouton principal, puis filtres et chiffres */
+.tdb-tete { order: -2; }
+.tdb-actions { order: -1; }
+
+/* Barre de filtres du tableau de bord */
+.tri {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px; background: #fff; border-radius: 22px; box-shadow: var(--tdb-ombre);
+}
+.tri-pastilles { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 auto; }
+.pastille-filtre {
+  position: relative; display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 14px 10px 16px; min-height: 48px; border-radius: 14px;
+  background: #F5F5F7; color: var(--texte); cursor: pointer;
+  transition: background 0.2s;
+}
+.pastille-filtre:hover { background: #EDEDF0; }
+.pastille-filtre:focus-within { outline: 3px solid var(--bleu); outline-offset: 2px; }
+.pf-libelle { font-size: 0.78rem; font-weight: 600; color: var(--tdb-gris); }
+.pf-valeur { font-size: 0.95rem; font-weight: 600; }
+.pf-chevron { color: var(--tdb-gris); }
+.pastille-filtre.actif { background: var(--orange-clair); }
+.pastille-filtre.actif .pf-libelle, .pastille-filtre.actif .pf-chevron { color: var(--orange); }
+.pastille-filtre select {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; font: inherit; border: none;
+}
+.tri-resume { display: flex; align-items: center; gap: 12px; padding: 0 8px; color: var(--tdb-gris); font-size: 0.9rem; }
+.tri-resume strong { color: var(--texte); font-variant-numeric: tabular-nums; }
+.tri-effacer {
+  font: inherit; font-weight: 600; color: var(--orange); background: none; border: none;
+  cursor: pointer; padding: 8px 4px;
+}
+@media (max-width: 720px) {
+  .pastille-filtre { flex: 1 1 calc(50% - 4px); justify-content: space-between; }
+  .tri-resume { width: 100%; justify-content: space-between; }
+}
+
+/* Écran d'enregistrement : fond entièrement blanc, formulaire épuré */
+body:has(.app.fond-blanc) { background: #fff; }
+.fond-blanc .carte { box-shadow: none; padding-left: 0; padding-right: 0; }
+.fond-blanc .formulaire h2 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; }
+.fond-blanc legend { color: var(--texte-doux); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.fond-blanc .champ > span { font-size: 0.85rem; font-weight: 500; color: var(--texte-doux); }
+.fond-blanc .champ input, .fond-blanc .champ select, .fond-blanc .champ textarea,
+.fond-blanc .pastille { background: #fff; border: 1px solid #D9D9DE; }
+.fond-blanc .pastille.actif { border-color: var(--orange); background: #fff; }
+.fond-blanc .champ input:focus, .fond-blanc .champ select:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.15); }
+.fond-blanc .compteur { background: #F5F5F7; }
+
+/* ===== Crèches et ateliers — même style sobre ===== */
+.creches .tri, .creches .tdb-carte { box-shadow: none; background: #F5F5F7; }
+.creches .pastille-filtre { background: #fff; }
+.creches .pastille-filtre:hover { background: #FAFAFA; }
+.creches .pastille-filtre.actif { background: #fff; box-shadow: inset 0 0 0 1px var(--orange); }
+
+.cr-actions { display: flex; gap: 8px; }
+.btn-sobre {
+  font: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+  border: none; border-radius: 999px; padding: 10px 18px; min-height: 42px;
+  background: #F5F5F7; color: var(--texte); transition: background 0.2s;
+}
+.btn-sobre:hover:not(:disabled) { background: #EBEBEF; }
+.btn-sobre.principal { background: var(--orange); color: #fff; }
+.btn-sobre.principal:hover:not(:disabled) { filter: brightness(0.95); }
+.btn-sobre:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sobre:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+
+/* Sélecteur de mois ‹ novembre 2026 › */
+.mois-pas { display: flex; align-items: center; gap: 4px; background: #fff; border-radius: 14px; padding: 4px; min-height: 48px; }
+.mois-pas span { min-width: 140px; text-align: center; font-weight: 600; text-transform: capitalize; }
+.mois-pas button {
+  font: inherit; font-size: 1.3rem; line-height: 1; color: var(--orange); cursor: pointer;
+  border: none; background: none; width: 40px; height: 40px; border-radius: 10px;
+}
+.mois-pas button:hover { background: #F5F5F7; }
+
+.cr-resume { margin: 0; color: var(--tdb-gris); font-size: 0.92rem; }
+.cr-resume strong { color: var(--texte); }
+
+/* Groupes d'âge : séparés par un filet, sans couleurs */
+.creches .groupe { border-top: 1px solid #E5E5EA; border-radius: 0; padding-top: 24px; }
+.creches .groupe-tete h3 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 10px; }
+.groupe-nb, .groupe-venus { font-size: 0.88rem; font-weight: 500; color: var(--tdb-gris); letter-spacing: 0; }
+.creches .jeux { background: none; padding: 0; margin: 4px 0 14px; color: var(--tdb-gris); font-size: 0.92rem; }
+.creches .tableau th { text-transform: none; letter-spacing: 0; font-size: 0.82rem; font-weight: 600; color: var(--tdb-gris); border-bottom: 1px solid #E5E5EA; }
+.creches .tableau td { border-bottom: 1px solid #F2F2F5; }
+.creches .tableau input[type='checkbox'] { accent-color: var(--orange); width: 22px; height: 22px; }
+.creches .tableau a { color: var(--texte); text-decoration: none; }
+.creches .alerte-presco { background: #F5F5F7; color: var(--texte); font-weight: 600; }
+
+@media (max-width: 720px) {
+  .cr-actions { width: 100%; }
+  .cr-actions .btn-sobre { flex: 1; }
+  .mois-pas { width: 100%; justify-content: space-between; }
+}
+
+/* ===== Bandeau illustré de l'accueil ===== */
+.entete.cache { display: none; }
+.hero {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 1.05fr 1fr; align-items: center;
+  min-height: 360px; margin: 20px 0 8px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #FFF4E2 0%, #FDE3BF 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 18px 48px rgba(224, 123, 0, 0.14);
+}
+.hero-texte { position: relative; z-index: 1; padding: 44px 0 44px 48px; }
+.hero-etiquette {
+  display: inline-block; margin-bottom: 18px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(255,255,255,.7); color: var(--orange);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.hero h1 {
+  margin: 0; font-size: clamp(2.1rem, 4.6vw, 3.4rem); font-weight: 800;
+  line-height: 1.05; letter-spacing: -0.035em; color: var(--texte);
+}
+.hero p { margin: 14px 0 0; font-size: clamp(1rem, 1.8vw, 1.2rem); font-weight: 600; color: var(--orange); }
+.hero-image {
+  position: absolute; top: 0; right: 0; height: 100%; width: 56%;
+  object-fit: cover; object-position: 60% 40%;
+  /* fondu de l'image vers le texte */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 28%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 28%);
+}
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; min-height: 0; border-radius: 22px; margin-top: 16px; }
+  .hero-image {
+    position: static; width: 100%; height: 240px; order: -1;
+    -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  }
+  .hero-texte { padding: 4px 22px 26px; }
+}
+
+/* Tuiles cliquables */
+button.tdb-tuile { font: inherit; color: inherit; text-align: left; border: none; cursor: pointer; width: 100%; }
+button.tdb-tuile:active { transform: scale(0.98); }
+button.tdb-tuile:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+.tdb-fleche { position: absolute; top: 18px; right: 22px; font-size: 1.5rem; line-height: 1; color: #C7C7CC; transition: transform 0.2s, color 0.2s; }
+button.tdb-tuile:hover .tdb-fleche { color: var(--orange); transform: translateX(3px); }
+
+/* Bandeau de la crèche : mêmes règles que l'accueil, titre h2 */
+.hero-creche { min-height: 360px; }
+.hero-creche h2 { margin: 0; font-size: clamp(1.9rem, 4vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.035em; }
+.hero-creche .hero-image { object-position: 50% 45%; }
+.creches .tdb-tete { justify-content: flex-end; margin-top: 0; }
+
+/* Entonnoir de suivi des appels (tableau de bord crèche) */
+.entonnoir { display: flex; flex-direction: column; gap: 16px; }
+.entonnoir-ligne { display: grid; grid-template-columns: 110px 1fr 36px; align-items: center; gap: 12px; }
+.entonnoir-libelle { font-size: 0.9rem; font-weight: 500; }
+.entonnoir-piste { height: 14px; background: #F5F5F7; border-radius: 7px; overflow: hidden; }
+.entonnoir-barre { height: 100%; background: var(--orange); border-radius: 7px; transition: width 0.6s cubic-bezier(.2,.8,.2,1); }
+.entonnoir-ligne:first-child .entonnoir-barre { background: #C7C7CC; }
+.entonnoir-valeur { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.creches .tdb-tuile, .creches .tdb-carte { background: #F5F5F7; box-shadow: none; }
+.creches .tdb-carte .entonnoir-piste, .creches .tdb-carte .colonne-piste { background: #fff; }
+
+/* KPI par classe d'âge (crèche) */
+.kpi-titre { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 12px; }
+.kpi-ages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 12px; }
+.kpi-age { background: #F5F5F7; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 2px; }
+.kpi-age.vide { opacity: 0.45; }
+.kpi-age-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.kpi-age-libelle { font-weight: 700; }
+.kpi-age-valeur { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.kpi-age-mini { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.kpi-mini { display: grid; grid-template-columns: 70px 1fr 22px; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--tdb-gris); }
+.kpi-mini span:last-child { text-align: right; color: var(--texte); font-weight: 600; }
+.kpi-mini .entonnoir-piste { height: 6px; background: #fff; }
+.kpi-age-presco { margin-top: 10px; font-size: 0.75rem; font-weight: 600; color: var(--orange); }
+
+/* ===== Barre du compte connecté ===== */
+.barre-compte { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0 0; }
+.bc-logo {
+  display: flex; align-items: center; gap: 10px; font: inherit; font-weight: 700; color: var(--texte);
+  background: none; border: none; cursor: pointer; padding: 4px; border-radius: 14px;
+}
+.bc-logo:focus-visible, .bc-deco:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+.bc-deco {
+  font: inherit; font-size: 0.9rem; font-weight: 600; color: var(--texte); cursor: pointer;
+  background: rgba(118, 118, 128, 0.12); border: none; border-radius: 999px; padding: 9px 16px;
+}
+.bc-deco:hover { background: rgba(118, 118, 128, 0.2); }
+.hero { margin-top: 14px; }
+
+/* ===== Page de connexion ===== */
+.connexion { display: grid; gap: 20px; padding-top: 20px; }
+.connexion-hero { margin: 0; }
+.connexion-carte {
+  width: 100%; max-width: 460px; justify-self: center; margin-top: -60px; position: relative; z-index: 2;
+  background: #fff; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 18px 48px rgba(30, 42, 74, 0.12);
+}
+.connexion-carte h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+.connexion-carte .champ input { background: #fff; border: 1px solid #D9D9DE; }
+.connexion-carte .champ input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.15); }
+.connexion-carte .message { margin: 0; }
+.comptes-demo summary { cursor: pointer; color: var(--texte-doux); font-size: 0.9rem; font-weight: 600; padding: 4px 0; }
+.comptes-demo ul { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.comptes-demo li button {
+  width: 100%; display: grid; grid-template-columns: 110px 1fr; gap: 2px 10px; text-align: left;
+  font: inherit; font-size: 0.88rem; color: var(--texte); cursor: pointer;
+  background: #F5F5F7; border: none; border-radius: 12px; padding: 10px 12px;
+}
+.comptes-demo li button:hover { background: var(--orange-clair); }
+.cd-role { font-weight: 700; color: var(--orange); grid-row: span 2; align-self: center; }
+.comptes-demo code { font-size: 0.8rem; color: var(--texte-doux); }
+@media (max-width: 720px) {
+  .connexion-carte { margin-top: -20px; padding: 22px; }
+  .bc-logo span { font-size: 0.9rem; }
+}
+button.tdb-tuile:disabled { cursor: default; transform: none; }
+
+/* Enfants transmis automatiquement par la mairie */
+.transmis { background: var(--orange-clair); border-radius: 22px; padding: 20px 22px; }
+.transmis ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.transmis li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; background: #fff; border-radius: 14px; padding: 10px 14px; }
+.badge-nouveau {
+  display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #fff; background: var(--orange); border-radius: 999px; padding: 2px 8px; margin-left: 6px;
+}
+.transmis .badge-nouveau { margin-left: 0; }
+
+/* Connexion par espace */
+.choix-espace {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; text-align: left; width: 100%;
+  font: inherit; color: var(--texte); cursor: pointer; border: none;
+  background: #F5F5F7; border-radius: 16px; padding: 16px 18px; transition: background 0.2s;
+}
+.choix-espace:hover { background: var(--orange-clair); }
+.choix-espace strong { font-size: 1.1rem; }
+.choix-espace span:not(.ce-fleche) { color: var(--texte-doux); font-size: 0.9rem; grid-column: 1; }
+.ce-fleche { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 1.6rem; color: var(--orange); }
+.comptes-choix { display: flex; flex-wrap: wrap; gap: 6px; }
+.comptes-choix button {
+  font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--texte); cursor: pointer;
+  border: none; background: #F5F5F7; border-radius: 999px; padding: 8px 14px;
+}
+.comptes-choix button.actif { background: var(--orange); color: #fff; }
+.connexion-note { text-align: center; margin: 0; font-size: 0.82rem; }
+.kpi-age-barre { height: 6px; margin-top: 12px; background: #fff; }
+
+/* Couleur propre à chaque classe d'âge (variable --c) */
+.kpi-age { background: #F5F5F7; }
+.kpi-age .kpi-age-libelle { color: var(--texte); }
+.kpi-age .kpi-age-valeur { color: var(--c); }
+.kpi-age .entonnoir-barre { background: var(--c); }
+.kpi-age .kpi-age-barre { background: #fff; }
+.kpi-age-tete { align-items: flex-start; } .illu-age { flex: none; margin: -4px -4px 0 0; }
+
+/* Navigation de l'espace crèche (Familles · Jeux) */
+.bc-nav { display: flex; gap: 4px; margin-left: auto; }
+.bc-nav button {
+  font: inherit; font-size: 0.95rem; font-weight: 600; color: var(--texte-doux); cursor: pointer;
+  background: none; border: none; border-radius: 999px; padding: 9px 16px;
+}
+.bc-nav button.actif { color: var(--texte); background: rgba(118, 118, 128, 0.12); }
+.bc-nav button:focus-visible { outline: 3px solid var(--bleu); outline-offset: 2px; }
+
+/* Page Jeux */
+.jeux-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; margin-top: 18px; }
+.jeux-carte { background: #F5F5F7; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.jeux-tete { display: flex; align-items: center; gap: 14px; }
+.jeux-tete h3 { margin: 0; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.015em; }
+.jeux-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.jeux-liste li { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 12px; padding: 10px 12px; font-weight: 500; }
+.jeux-liste li span:nth-child(2) { flex: 1; }
+.jeux-puce { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.jeux-liste button {
+  font-size: 1.2rem; line-height: 1; color: var(--tdb-gris); background: none; border: none; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 50%;
+}
+.jeux-liste button:hover { background: var(--rouge-clair); color: var(--rouge); }
+.jeux-ajout { display: flex; gap: 8px; }
+.jeux-ajout input { flex: 1; min-width: 0; font: inherit; padding: 10px 12px; border: 1px solid #D9D9DE; border-radius: 12px; background: #fff; }
+.jeux-ajout input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.15); }
+.jeux-ajout button { font: inherit; font-weight: 600; color: #fff; background: var(--orange); border: none; border-radius: 12px; padding: 0 16px; cursor: pointer; }
+.jeux-ajout button:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 720px) {
+  .barre-compte { flex-wrap: wrap; }
+  .bc-nav { order: 3; width: 100%; margin-left: 0; }
+  .bc-nav button { flex: 1; }
+}
+
+/* ===== Jeux : liste, fiche et formulaire ===== */
+.jeu-ligne {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
+  font: inherit; font-weight: 500; color: var(--texte); cursor: pointer;
+  background: none; border: none; padding: 0;
+}
+.jeux-liste li { padding: 12px 14px; }
+.jeu-nom { flex: 1; }
+.jeu-format { font-size: 0.78rem; color: var(--tdb-gris); }
+.jeux-liste li:hover { background: #FAFAFA; }
+.jeux-ajouter {
+  font: inherit; font-weight: 600; color: var(--orange); cursor: pointer;
+  background: #fff; border: 1.5px dashed #E5D3BA; border-radius: 12px; padding: 12px;
+}
+.jeux-ajouter:hover { background: var(--orange-clair); }
+
+.fenetre {
+  position: relative; background: #fff; border-radius: 24px; width: 100%; max-width: 640px;
+  max-height: calc(100vh - 32px); overflow-y: auto; padding: 28px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+.fenetre-fermer {
+  position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: #F5F5F7; font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--texte);
+}
+.jeu-form { display: flex; flex-direction: column; gap: 16px; }
+.jeu-form h2, .fiche-jeu h2 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; padding-right: 40px; }
+.jeu-form .champ input, .jeu-form .champ textarea { background: #fff; border: 1px solid #D9D9DE; }
+.jeu-form .champ input:focus, .jeu-form .champ textarea:focus { border-color: var(--orange); }
+.format-choix { display: flex; gap: 8px; }
+.format-choix button {
+  flex: 1; font: inherit; font-weight: 600; cursor: pointer; color: var(--texte);
+  background: #F5F5F7; border: 1.5px solid transparent; border-radius: 12px; padding: 12px;
+}
+.format-choix button.actif { border-color: var(--orange); background: var(--orange-clair); }
+.etapes-edition { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.etapes-edition li { display: flex; gap: 10px; align-items: flex-start; background: #F5F5F7; border-radius: 14px; padding: 12px; }
+.etape-num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+.etape-corps { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.etape-photo { display: flex; align-items: center; gap: 10px; }
+.etape-photo img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; }
+.etape-photo .btn-sobre { background: #fff; cursor: pointer; display: inline-flex; align-items: center; }
+.etape-suppr { flex: none; border: none; background: none; font-size: 1.3rem; color: var(--tdb-gris); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; }
+.etape-suppr:hover { background: var(--rouge-clair); color: var(--rouge); }
+.jeu-form .actions { justify-content: flex-end; }
+
+.fiche-jeu h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tdb-gris); margin: 22px 0 8px; }
+.fiche-jeu p { margin: 0; }
+.fiche-age { display: inline-block; font-size: 0.78rem; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+.video { position: relative; padding-top: 56.25%; border-radius: 14px; overflow: hidden; background: #000; }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.etapes-fiche { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.etapes-fiche li { display: flex; gap: 12px; align-items: flex-start; }
+.etapes-fiche img { width: 120px; height: 90px; object-fit: cover; border-radius: 12px; flex: none; }
+.a-observer { background: var(--orange-clair); border-radius: 12px; padding: 12px 14px !important; }
+.fiche-jeu .btn-lien { margin-top: 20px; padding: 0; }
+@media (max-width: 720px) {
+  .fenetre { padding: 22px 18px; border-radius: 20px; }
+  .etapes-fiche li { flex-direction: column; }
+  .etapes-fiche img { width: 100%; height: auto; }
+}
+.champ select:disabled { color: var(--texte); background: #F5F5F7 !important; opacity: 1; cursor: not-allowed; }
+
+/* ===== Popup après enregistrement ===== */
+.popup-fond { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: fondu 0.2s ease; }
+.popup {
+  background: #fff; border-radius: 28px; width: 100%; max-width: 380px;
+  padding: 36px 28px 26px; text-align: center;
+  box-shadow: 0 30px 80px rgba(30, 42, 74, 0.25);
+  animation: apparition 0.35s cubic-bezier(.2, .9, .3, 1.2);
+}
+.popup h2 { margin: 18px 0 6px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+.popup p { margin: 0; color: var(--texte-doux); }
+.popup p strong { color: var(--texte); }
+.popup-question { margin-top: 22px !important; color: var(--texte) !important; font-weight: 600; }
+.popup-actions { display: flex; gap: 10px; margin-top: 14px; }
+.popup-actions .btn-sobre { flex: 1; min-height: 50px; }
+.popup-spinner {
+  width: 56px; height: 56px; margin: 0 auto; border-radius: 50%;
+  border: 5px solid var(--orange-clair); border-top-color: var(--orange);
+  animation: tourne 0.9s linear infinite;
+}
+.popup-check { width: 72px; height: 72px; display: block; margin: 0 auto; }
+.popup-check circle { fill: var(--vert); transform-origin: center; animation: pop 0.4s cubic-bezier(.2, .9, .3, 1.4); }
+.popup-check path {
+  fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 40; stroke-dashoffset: 40; animation: trace 0.45s 0.25s ease forwards;
+}
+@keyframes tourne { to { transform: rotate(360deg); } }
+@keyframes fondu { from { opacity: 0; } }
+@keyframes apparition { from { opacity: 0; transform: scale(0.92) translateY(8px); } }
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } }
+@keyframes trace { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .popup, .popup-fond, .popup-check circle { animation: none; }
+  .popup-check path { animation: none; stroke-dashoffset: 0; }
+  .popup-spinner { animation-duration: 2.5s; }
+}
