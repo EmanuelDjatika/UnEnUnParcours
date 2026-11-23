@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import LogoEnfant from '../components/LogoEnfant';
+import NavVitrine, { allerA } from '../components/NavVitrine';
 import { IconeStructure } from '../components/EtiquetteStructure';
 
 /** Les trois étapes du parcours, de la naissance à l'atelier */
@@ -11,8 +12,9 @@ const ETAPES = [
 
 /** Jeux réellement fabriqués en carton recyclé (photos dans /public/jouets) */
 const JOUETS = [
+  // portrait : photo en hauteur, affichée plus étroite pour tenir sous l'arche
   { image: '/jouets/labyrinthe.jpg', nom: 'Le labyrinthe' },
-  { image: '/jouets/tour-des-nombres.jpg', nom: 'La tour des nombres' },
+  { image: '/jouets/tour-des-nombres.jpg', nom: 'La tour des nombres', portrait: true },
   { image: '/jouets/boite-a-compter.jpg', nom: 'La boîte à compter' },
   { image: '/jouets/puzzle-animaux.jpg', nom: 'Le puzzle des animaux' },
   { image: '/jouets/tri-couleurs.jpg', nom: 'Le tri des couleurs' },
@@ -28,8 +30,11 @@ function JeuQuiChange() {
   return (
     <figure className="vt-arche vt-arche-jeux">
       <div className="vt-arche-image">
+        {/* Chaque jeu est affiché en entier, comme une carte posée sur fond kraft */}
         {JOUETS.map((j, i) => (
-          <img key={j.image} src={j.image} alt={i === actif ? j.nom : ''} className={i === actif ? 'actif' : ''} />
+          <div key={j.image} className={`vt-diapo ${i === actif ? 'actif' : ''}`}>
+            <img className={`vt-diapo-jeu ${'portrait' in j ? 'portrait' : ''}`} src={j.image} alt={i === actif ? j.nom : ''} />
+          </div>
         ))}
       </div>
       <figcaption aria-live="polite">
@@ -51,27 +56,29 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
   const cta = connecte ? 'Ouvrir mon espace' : 'Accéder à la plateforme';
   return (
     <div className="vitrine">
-      <header className="vt-barre">
-        <span className="vt-marque"><LogoEnfant taille={36} /> Un enfant, un parcours d'éveil</span>
-        <button className="vt-lien" onClick={onEntrer}>{connecte ? 'Mon espace' : 'Se connecter'} ›</button>
-      </header>
+      <NavVitrine onEntrer={onEntrer} connecte={connecte} />
 
       {/* Bandeau principal */}
       <section className="vt-hero">
+        <img className="vt-hero-image" src="/eveil-hero.png" alt="Une maman et son enfant jouent avec un tuyau à balle fabriqué en carton" />
         <div className="vt-hero-texte">
-          <span className="hero-etiquette">UNICEF Togo · Éveil du jeune enfant</span>
+          <span className="vt-surtitre">UNICEF Togo · Éveil du jeune enfant</span>
           <h1>Un enfant,<br />un parcours d'éveil</h1>
           <p className="vt-accroche">
             Chaque enfant a droit à l'éveil, grâce à des jeux faits maison
             avec des <strong>cartons recyclés</strong>.
           </p>
-          <button className="btn btn-principal btn-large vt-cta" onClick={onEntrer}>{cta}</button>
+          <div className="vt-hero-actions">
+            <button className="btn btn-principal btn-large vt-cta" onClick={onEntrer}>{cta}</button>
+            <button className="vt-hero-lien" onClick={() => allerA('fait-maison')}>
+              Découvrir le projet
+            </button>
+          </div>
         </div>
-        <img className="vt-hero-image" src="/eveil-hero.png" alt="Une maman et son enfant jouent avec un tuyau à balle fabriqué en carton" />
       </section>
 
       {/* Les cartons deviennent des jeux */}
-      <section className="vt-section vt-transfo">
+      <section className="vt-section vt-transfo" id="fait-maison">
         <div className="vt-transfo-texte">
           <span className="vt-surtitre">Fait maison</span>
           <h2>Les cartons deviennent des jeux.</h2>
@@ -92,7 +99,7 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
       </section>
 
       {/* Le constat et la réponse */}
-      <section className="vt-section vt-intro">
+      <section className="vt-section vt-intro" id="pourquoi">
         <span className="vt-surtitre">Pourquoi</span>
         <h2>Jouer, c'est apprendre.</h2>
         <p>
@@ -103,7 +110,7 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
       </section>
 
       {/* Le parcours */}
-      <section className="vt-section">
+      <section className="vt-section" id="parcours">
         <span className="vt-surtitre">Comment</span>
         <h2>Le parcours</h2>
         <ol className="vt-etapes">
@@ -118,7 +125,7 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
       </section>
 
       {/* Les ateliers */}
-      <section className="vt-section vt-ateliers">
+      <section className="vt-section vt-ateliers" id="ateliers">
         <img src="/creche-hero.png" alt="Des enfants jouent aux cubes avec une animatrice" />
         <div>
           <span className="vt-surtitre">Où</span>
@@ -139,7 +146,24 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
         <button className="btn btn-principal btn-large vt-cta" onClick={onEntrer}>{cta}</button>
       </section>
 
-      <footer className="pied">Prototype hackathon UNICEF Togo · fonctionne hors ligne</footer>
+      {/* Pied de page sobre : marque et liens, puis mentions */}
+      <footer className="vt-pied">
+        <div className="vt-pied-haut">
+          <div className="vt-pied-marque">
+            <LogoEnfant taille={32} />
+            <div>
+              <strong>Un enfant, un parcours d'éveil</strong>
+              <span>Des jeux d'éveil en carton recyclé, pour chaque enfant.</span>
+            </div>
+          </div>
+          <nav className="vt-pied-liens" aria-label="Pied de page">
+            <button onClick={() => allerA('fait-maison')}>Le projet</button>
+            <button onClick={onEntrer}>{connecte ? 'Mon espace' : 'Se connecter'}</button>
+          </nav>
+        </div>
+        <div className="vt-pied-bas">
+          <span>© {new Date().getFullYear()} · Prototype réalisé pour le hackathon UNICEF Togo</span>        </div>
+      </footer>
     </div>
   );
 }

@@ -83,7 +83,6 @@ export default function App() {
             aller(ACCUEIL[c.role]);
             return c;
           }} />
-        <footer className="pied">Prototype hackathon UNICEF Togo · fonctionne hors ligne</footer>
       </div>
     );
   }
@@ -152,8 +151,6 @@ export default function App() {
         {cible === '/structure' && <Structures store={store} structureFixe={compte.structureId} />}
         {cible === '/structure/jeux' && <Jeux store={store} />}
       </main>
-
-      <footer className="pied non-imprime">Prototype hackathon UNICEF Togo · fonctionne hors ligne</footer>
     </div>
   );
 }
