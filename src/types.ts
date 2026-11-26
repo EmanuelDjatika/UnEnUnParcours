@@ -69,6 +69,8 @@ export interface Presence {
   appele: boolean;
   confirme: boolean;
   venu: boolean;
+  /** Invitation envoyée par SMS pour cet atelier (envoi simulé) */
+  invite?: boolean;
 }
 
 /** Index de tranche d'âge : 0 = 0-1 an, ..., 4 = 4-5 ans */
@@ -89,14 +91,39 @@ export interface Jeu {
   format: 'video' | 'fabrication';
   videoUrl?: string;
   etapes: Etape[];
-  /** Comment jouer avec l'enfant */
+  /** Comment jouer avec l'enfant (une étape par ligne) */
   utilisation: string;
-  /** Ce qu'il faut observer chez l'enfant */
+  /** Ce qu'il faut observer chez l'enfant (un point par ligne) */
   observer: string;
+  /** Capacités que le jeu développe */
+  competences?: CompetenceId[];
+  /** Matériel pour fabriquer le jeu */
+  materiel?: string[];
 }
+
+/** Domaines du développement de l'enfant travaillés par un jeu */
+export type CompetenceId = 'motricite_fine' | 'motricite_globale' | 'coordination' | 'reflexion' | 'patience' | 'langage' | 'sens' | 'relation';
 
 /** Jeux proposés pour chaque tranche d'âge */
 export type Ateliers = Record<TrancheId, Jeu[]>;
+
+/** Une campagne d'invitations par SMS (envoi simulé : aucun SMS réel) */
+export interface Invitation {
+  id: string;
+  /** Date d'envoi (ISO) */
+  date: string;
+  /** Mois de l'atelier « AAAA-MM » */
+  mois: string;
+  /** Date (AAAA-MM-JJ) et heure (HH:MM) de l'atelier */
+  dateAtelier: string;
+  heure: string;
+  localiteId: string;
+  quartierIds: string[];
+  tranches: TrancheId[];
+  /** Modèle du message, avec {parent}, {enfant}, {age}, {date}, {heure}, {structure}, {quartier} */
+  message: string;
+  enfantIds: string[];
+}
 
 /** Ensemble des données sauvegardées */
 export interface Donnees {
@@ -107,4 +134,21 @@ export interface Donnees {
   enfants: Enfant[];
   presences: Presence[];
   ateliers: Ateliers;
+  invitations: Invitation[];
+  /** Identifiants des jeux par défaut déjà proposés (un jeu supprimé ne revient pas) */
+  jeuxDefautVus?: string[];
+  /** Familles qui ont rempli le formulaire d'accès aux jeux sur la page publique */
+  demandesJeux?: DemandeJeux[];
+}
+
+/** Formulaire rempli par un parent pour accéder aux jeux depuis la page publique */
+export interface DemandeJeux {
+  id: string;
+  /** Date d'envoi (ISO) */
+  date: string;
+  prenom: string;
+  telephone: string;
+  localiteId: string;
+  /** Tranche d'âge de l'enfant */
+  tranche: TrancheId;
 }

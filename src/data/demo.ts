@@ -1,5 +1,5 @@
 import type { Donnees, Enfant, Langue, Localite, Presence, Quartier, Region, Sexe, Structure } from '../types';
-import { ATELIERS_PAR_DEFAUT } from './ateliers';
+import { ATELIERS_PAR_DEFAUT, JEUX_PAR_DEFAUT } from './ateliers';
 
 // Données de démonstration : 60 enfants fictifs, 2 localités, 6 quartiers, 4 structures
 // (2 crèches, 1 école préscolaire, 1 centre social).
@@ -106,6 +106,8 @@ export function genererDemo(): Donnees {
     enfants,
     presences,
     ateliers: structuredClone(ATELIERS_PAR_DEFAUT),
+    invitations: [],
+    jeuxDefautVus: JEUX_PAR_DEFAUT.map((d) => d.jeu.id),
   };
 }
 
@@ -119,5 +121,7 @@ export function donneesVides(): Donnees {
     enfants: [],
     presences: [],
     ateliers: structuredClone(ATELIERS_PAR_DEFAUT),
+    invitations: [],
+    jeuxDefautVus: JEUX_PAR_DEFAUT.map((d) => d.jeu.id),
   };
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import LogoEnfant from './LogoEnfant';
+import { LogoComplet } from './LogoEnfant';
 
 /** Liens de la barre : ancres des sections de la page de présentation */
 const LIENS = [
@@ -7,6 +7,7 @@ const LIENS = [
   { id: 'pourquoi', libelle: 'Pourquoi' },
   { id: 'parcours', libelle: 'Le parcours' },
   { id: 'ateliers', libelle: 'Les ateliers' },
+  { id: 'jeux', libelle: 'Les jeux' },
 ];
 
 /** Fait défiler en douceur jusqu'à une section (le décalage sous la barre est géré en CSS) */
@@ -67,8 +68,7 @@ export default function NavVitrine({ onEntrer, connecte }: { onEntrer: () => voi
     <header className={`vt-nav ${defile ? 'defile' : ''} ${ouvert ? 'ouvert' : ''}`}>
       <div className="vt-nav-barre">
         <button className="vt-nav-marque" onClick={() => { setOuvert(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Haut de la page">
-          <LogoEnfant taille={34} />
-          <span className="vt-nav-nom"><span>Un enfant,</span> <em>un parcours d'éveil</em></span>
+          <LogoComplet hauteur={42} />
         </button>
 
         <nav className="vt-nav-liens" aria-label="Sections de la page">

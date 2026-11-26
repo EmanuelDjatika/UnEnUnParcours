@@ -1,32 +1,15 @@
-import { useEffect, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import type { Store } from '../store/useStore';
-import type { Etape, Jeu, TrancheId } from '../types';
+import type { CompetenceId, Etape, Jeu, TrancheId } from '../types';
+import { COMPETENCES, enLignes } from '../data/competences';
 import { TRANCHES, libelleTranche } from '../utils/age';
-import { compresserImage, lienYoutube } from '../utils/image';
+import { compresserImage } from '../utils/image';
 import IllustrationAge from '../components/IllustrationAge';
 import ConfirmationModal from '../components/ConfirmationModal';
-
-const COULEURS_AGES = ['#F2B254', '#EC9A2E', '#E07B00', '#C76A00', '#A85700'];
+import { COULEURS_AGES, CarteJeu, Fenetre, FicheJeu, compteJeux } from '../components/JeuCommun';
 
 const nouvelId = () => `jeu-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-
-/** Fenêtre plein écran (fiche ou formulaire) ; Échap ferme */
-function Fenetre({ titre, onFermer, children }: { titre: string; onFermer: () => void; children: ReactNode }) {
-  useEffect(() => {
-    const f = (e: KeyboardEvent) => e.key === 'Escape' && onFermer();
-    window.addEventListener('keydown', f);
-    return () => window.removeEventListener('keydown', f);
-  }, [onFermer]);
-  return (
-    <div className="modal-fond" onClick={onFermer}>
-      <div className="fenetre" role="dialog" aria-modal="true" aria-label={titre} onClick={(e) => e.stopPropagation()}>
-        <button className="fenetre-fermer" onClick={onFermer} aria-label="Fermer">×</button>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 /** Formulaire d'ajout d'un jeu : vidéo OU fabrication en images, + utilisation et observation */
 function FormulaireJeu({ tranche, onEnregistrer, onAnnuler }: { tranche: TrancheId; onEnregistrer: (j: Jeu) => void; onAnnuler: () => void }) {
@@ -36,7 +19,11 @@ function FormulaireJeu({ tranche, onEnregistrer, onAnnuler }: { tranche: Tranche
   const [etapes, setEtapes] = useState<Etape[]>([{ texte: '' }]);
   const [utilisation, setUtilisation] = useState('');
   const [observer, setObserver] = useState('');
+  const [competences, setCompetences] = useState<CompetenceId[]>([]);
+  const [materiel, setMateriel] = useState('');
   const [erreur, setErreur] = useState('');
+
+  const basculer = (id: CompetenceId) => setCompetences((l) => (l.includes(id) ? l.filter((x) => x !== id) : [...l, id]));
 
   const majEtape = (i: number, e: Partial<Etape>) => setEtapes((l) => l.map((x, k) => (k === i ? { ...x, ...e } : x)));
 
@@ -55,6 +42,7 @@ function FormulaireJeu({ tranche, onEnregistrer, onAnnuler }: { tranche: Tranche
       videoUrl: format === 'video' ? videoUrl.trim() : undefined,
       etapes: format === 'fabrication' ? etapesOk.map((x) => ({ ...x, texte: x.texte.trim() })) : [],
       utilisation: utilisation.trim(), observer: observer.trim(),
+      competences, materiel: enLignes(materiel),
     });
   }
 
@@ -100,11 +88,27 @@ function FormulaireJeu({ tranche, onEnregistrer, onAnnuler }: { tranche: Tranche
         </div>
       )}
 
-      <label className="champ"><span>Comment l'utiliser avec l'enfant</span>
-        <textarea rows={3} value={utilisation} onChange={(e) => setUtilisation(e.target.value)} />
+      <div className="champ"><span>Ce que l'enfant développe</span>
+        <div className="competences-choix">
+          {COMPETENCES.map((c) => {
+            const actif = competences.includes(c.id);
+            return (
+              <button key={c.id} type="button" aria-pressed={actif} onClick={() => basculer(c.id)}
+                style={actif ? { background: c.fond, borderColor: c.couleur, color: c.couleur } : undefined}>
+                <span className="competence-mini" style={{ color: c.couleur }}>{c.icone}</span>{c.nom}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <label className="champ"><span>Matériel <small className="aide">un élément par ligne</small></span>
+        <textarea rows={3} value={materiel} onChange={(e) => setMateriel(e.target.value)} placeholder={'Une boîte en carton\nDes bouchons\nDe la colle'} />
       </label>
-      <label className="champ"><span>Ce qu'il faut observer chez l'enfant</span>
-        <textarea rows={3} value={observer} onChange={(e) => setObserver(e.target.value)} placeholder="Ex. suit l'objet des yeux, attrape avec les deux mains…" />
+      <label className="champ"><span>Comment jouer avec l'enfant <small className="aide">une étape par ligne</small></span>
+        <textarea rows={4} value={utilisation} onChange={(e) => setUtilisation(e.target.value)} placeholder={"Montrez le geste à l'enfant\nLaissez-le essayer seul"} />
+      </label>
+      <label className="champ"><span>Ce qu'il faut observer chez l'enfant <small className="aide">un point par ligne</small></span>
+        <textarea rows={4} value={observer} onChange={(e) => setObserver(e.target.value)} placeholder={"Suit l'objet des yeux\nAttrape avec les deux mains"} />
       </label>
 
       {erreur && <p className="message erreur" role="alert">{erreur}</p>}
@@ -116,40 +120,10 @@ function FormulaireJeu({ tranche, onEnregistrer, onAnnuler }: { tranche: Tranche
   );
 }
 
-/** Fiche d'un jeu : vidéo ou étapes, utilisation, observation */
-function FicheJeu({ jeu, tranche, onSupprimer }: { jeu: Jeu; tranche: TrancheId; onSupprimer: () => void }) {
-  const yt = jeu.videoUrl ? lienYoutube(jeu.videoUrl) : null;
-  return (
-    <article className="fiche-jeu">
-      <span className="fiche-age">{libelleTranche(tranche)}</span>
-      <h2>{jeu.nom}</h2>
-
-      <h3>Fabrication</h3>
-      {jeu.format === 'video' ? (
-        yt ? <div className="video"><iframe src={yt} title={jeu.nom} allowFullScreen /></div>
-          : <a className="btn-sobre principal" href={jeu.videoUrl} target="_blank" rel="noreferrer">Regarder la vidéo ›</a>
-      ) : (
-        <ol className="etapes-fiche">
-          {jeu.etapes.map((et, i) => (
-            <li key={i}>
-              {et.image && <img src={et.image} alt={`Étape ${i + 1}`} />}
-              <p><strong>{i + 1}.</strong> {et.texte}</p>
-            </li>
-          ))}
-        </ol>
-      )}
-
-      {jeu.utilisation && <><h3>Utilisation</h3><p>{jeu.utilisation}</p></>}
-      {jeu.observer && <><h3>À observer chez l'enfant</h3><p className="a-observer">{jeu.observer}</p></>}
-
-      <button className="btn-lien" onClick={onSupprimer}>Supprimer ce jeu</button>
-    </article>
-  );
-}
-
 /** Espace crèche : les jeux à fabriquer pendant les ateliers, par âge */
 export default function Jeux({ store }: { store: Store }) {
   const { ateliers } = store.donnees;
+  const [tranche, setTranche] = useState<TrancheId | null>(null);
   const [ajout, setAjout] = useState<TrancheId | null>(null);
   const [ouvert, setOuvert] = useState<{ t: TrancheId; id: string } | null>(null);
   const [aSupprimer, setASupprimer] = useState<{ t: TrancheId; id: string } | null>(null);
@@ -174,32 +148,41 @@ export default function Jeux({ store }: { store: Store }) {
     <div className="page tdb creches">
       <div className="jeux-grille">
         {TRANCHES.map((t) => (
-          <section key={t} className="jeux-carte">
+          <button key={t} className="jeux-carte" onClick={() => setTranche(t)}>
+            <span className="jeux-tete">
+              <IllustrationAge tranche={t} couleur={COULEURS_AGES[t]} taille={64} />
+              <span className="jeux-tete-texte">
+                <span className="jeux-titre">{libelleTranche(t)}</span>
+                <span className="tdb-detail">{compteJeux(ateliers[t].length)}</span>
+              </span>
+              <span className="jeux-chevron" aria-hidden="true">›</span>
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Une seule fenêtre à la fois : fiche ou formulaire par-dessus la liste de la tranche */}
+      {tranche !== null && ajout === null && !ouvert && (
+        <Fenetre titre={`Jeux ${libelleTranche(tranche)}`} onFermer={() => setTranche(null)}>
+          <div className="jeux-fenetre">
             <div className="jeux-tete">
-              <IllustrationAge tranche={t} couleur={COULEURS_AGES[t]} taille={52} />
-              <div>
-                <h3>{libelleTranche(t)}</h3>
-                <span className="tdb-detail">{ateliers[t].length ? `${ateliers[t].length} jeu${ateliers[t].length > 1 ? 'x' : ''}` : 'Aucun jeu pour le moment'}</span>
-              </div>
+              <IllustrationAge tranche={tranche} couleur={COULEURS_AGES[tranche]} taille={64} />
+              <span className="jeux-tete-texte">
+                <h2>Jeux {libelleTranche(tranche)}</h2>
+                <span className="tdb-detail">{compteJeux(ateliers[tranche].length)}</span>
+              </span>
             </div>
-            {ateliers[t].length > 0 && (
-              <ul className="jeux-liste">
-                {ateliers[t].map((j) => (
-                  <li key={j.id}>
-                    <button className="jeu-ligne" onClick={() => setOuvert({ t, id: j.id })}>
-                      <span className="jeux-puce" style={{ background: COULEURS_AGES[t] }} />
-                      <span className="jeu-nom">{j.nom}</span>
-                      <span className="jeu-format">{j.format === 'video' ? 'Vidéo' : `${j.etapes.length} étape${j.etapes.length > 1 ? 's' : ''}`}</span>
-                      <span aria-hidden="true">›</span>
-                    </button>
-                  </li>
+            {ateliers[tranche].length > 0 && (
+              <ul className="jeux-cartes">
+                {ateliers[tranche].map((j) => (
+                  <li key={j.id}><CarteJeu jeu={j} tranche={tranche} onOuvrir={() => setOuvert({ t: tranche, id: j.id })} /></li>
                 ))}
               </ul>
             )}
-            <button className="jeux-ajouter" onClick={() => setAjout(t)}>+ Ajouter un jeu</button>
-          </section>
-        ))}
-      </div>
+            <button className="jeux-ajouter" onClick={() => setAjout(tranche)}>+ Ajouter un jeu</button>
+          </div>
+        </Fenetre>
+      )}
 
       {ajout !== null && (
         <Fenetre titre="Nouveau jeu" onFermer={() => setAjout(null)}>
@@ -209,7 +192,7 @@ export default function Jeux({ store }: { store: Store }) {
       )}
 
       {ouvert && jeuOuvert && (
-        <Fenetre titre={jeuOuvert.nom} onFermer={() => setOuvert(null)}>
+        <Fenetre large titre={jeuOuvert.nom} onFermer={() => setOuvert(null)}>
           <FicheJeu jeu={jeuOuvert} tranche={ouvert.t} onSupprimer={() => setASupprimer(ouvert)} />
         </Fenetre>
       )}

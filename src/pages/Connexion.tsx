@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { COMPTES } from '../data/comptes';
 import type { Compte, Role } from '../data/comptes';
-import LogoEnfant from '../components/LogoEnfant';
+import { LogoComplet } from '../components/LogoEnfant';
 
 interface Props {
   /** Espace concerné ; absent = page de choix de l'espace */
@@ -53,7 +53,7 @@ export default function Connexion({ role, onConnecter, onChoisirEspace, onRetour
       {/* Panneau du formulaire */}
       <section className="cx-panneau">
         <div className="cx-contenu">
-          <button type="button" className="cx-logo" onClick={onAccueil} aria-label="Présentation du projet"><LogoEnfant taille={52} /></button>
+          <button type="button" className="cx-logo" onClick={onAccueil} aria-label="Présentation du projet"><LogoComplet hauteur={64} /></button>
           {!role ? (
             <>
               <div className="cx-tete">

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import LogoEnfant from '../components/LogoEnfant';
+import { LogoComplet } from '../components/LogoEnfant';
 import NavVitrine, { allerA } from '../components/NavVitrine';
 import { IconeStructure } from '../components/EtiquetteStructure';
+import JeuxPublics from '../components/JeuxPublics';
+import type { Store } from '../store/useStore';
 
 /** Les trois étapes du parcours, de la naissance à l'atelier */
 const ETAPES = [
@@ -52,7 +54,7 @@ function JeuQuiChange() {
  * Page de présentation du projet (adresse « / »), ouverte à tous.
  * onEntrer : vers le choix de l'espace, ou vers son espace si déjà connecté.
  */
-export default function Presentation({ onEntrer, connecte }: { onEntrer: () => void; connecte: boolean }) {
+export default function Presentation({ store, onEntrer, connecte }: { store: Store; onEntrer: () => void; connecte: boolean }) {
   const cta = connecte ? 'Ouvrir mon espace' : 'Accéder à la plateforme';
   return (
     <div className="vitrine">
@@ -140,6 +142,9 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
       </section>
 
 
+      {/* Les jeux, par âge, débloqués par un court formulaire */}
+      <JeuxPublics store={store} />
+
       {/* Appel final */}
       <section className="vt-fin">
         <h2>De la naissance au préscolaire, par le jeu.</h2>
@@ -150,7 +155,7 @@ export default function Presentation({ onEntrer, connecte }: { onEntrer: () => v
       <footer className="vt-pied">
         <div className="vt-pied-haut">
           <div className="vt-pied-marque">
-            <LogoEnfant taille={32} />
+            <LogoComplet hauteur={52} />
             <div>
               <strong>Un enfant, un parcours d'éveil</strong>
               <span>Des jeux d'éveil en carton recyclé, pour chaque enfant.</span>

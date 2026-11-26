@@ -8,6 +8,7 @@ import FiltrePastille from '../components/FiltrePastille';
 import IllustrationAge from '../components/IllustrationAge';
 import EtiquetteStructure, { LISTE_TYPES, TYPES_STRUCTURE, nomCourt } from '../components/EtiquetteStructure';
 import GestionStructures from '../components/GestionStructures';
+import InvitationSMS from '../components/InvitationSMS';
 
 
 /** Dégradé d'orange : plus l'enfant grandit, plus la teinte est profonde */
@@ -26,7 +27,7 @@ function decaler(mois: string, n: number): string {
  * structureFixe : compte structure, seule sa structure est visible.
  */
 export default function Structures({ store, structureFixe }: { store: Store; structureFixe?: string }) {
-  const { regions, localites, quartiers, structures, enfants, presences, ateliers } = store.donnees;
+  const { regions, localites, quartiers, structures, enfants, presences, ateliers, invitations } = store.donnees;
   // Ville de départ : celle de la structure du compte, sinon la première
   const villeDepart = localites.find((l) => l.id === structures.find((c) => c.id === structureFixe)?.localiteId) ?? localites[0];
   const [regionId, setRegionId] = useState(villeDepart?.regionId ?? '');
@@ -35,6 +36,8 @@ export default function Structures({ store, structureFixe }: { store: Store; str
   // Filtre « Type de structure » ('' : toutes)
   const [typeFiltre, setTypeFiltre] = useState('');
   const [gestion, setGestion] = useState(false);
+  // Fenêtre « Inviter des parents par SMS »
+  const [invitation, setInvitation] = useState(false);
   // Par défaut : première structure de la localité, pour voir tout de suite une liste
   const premiereStructure = (loc: string, type = typeFiltre) => structures.find((c) => c.localiteId === loc && (!type || c.type === type))?.id ?? '';
   const [structureId, setStructureId] = useState(() => structureFixe ?? premiereStructure(villeDepart?.id ?? ''));
@@ -70,6 +73,7 @@ export default function Structures({ store, structureFixe }: { store: Store; str
     .sort((a, b) => b.dateEnregistrement.localeCompare(a.dateEnregistrement));
   const nomQuartierDe = (id: string) => quartiers.find((q) => q.id === id)?.nom ?? '';
   const pr = (id: string) => presences.find((x) => x.enfantId === id && x.mois === mois);
+  const nbInvites = tousEnfants.filter((e) => pr(e.id)?.invite).length;
   const nbAppeles = tousEnfants.filter((e) => pr(e.id)?.appele).length;
   const nbConfirmes = tousEnfants.filter((e) => pr(e.id)?.confirme).length;
   const nbVenus = tousEnfants.filter((e) => pr(e.id)?.venu).length;
@@ -77,11 +81,14 @@ export default function Structures({ store, structureFixe }: { store: Store; str
   const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
   const etapes = [
     { libelle: 'À inviter', valeur: total },
+    { libelle: 'Invités par SMS', valeur: nbInvites },
     { libelle: 'Appelés', valeur: nbAppeles },
     { libelle: 'Ont confirmé', valeur: nbConfirmes },
     { libelle: 'Sont venus', valeur: nbVenus },
   ];
   const maxGroupe = Math.max(1, ...TRANCHES.map((t) => groupes.get(t)!.length));
+  // Dernières campagnes d'invitations SMS qui concernent ces quartiers
+  const dernieresInvitations = invitations.filter((inv) => inv.quartierIds.some((id) => idsCibles.has(id))).slice(-3).reverse();
 
 
   return (
@@ -124,12 +131,43 @@ export default function Structures({ store, structureFixe }: { store: Store; str
         {!structureFixe && <button className="tri-effacer" onClick={() => setGestion(true)}>Gérer les structures</button>}
       </section>
       {gestion && <GestionStructures store={store} onFermer={() => setGestion(false)} />}
+      {invitation && <InvitationSMS store={store} structureFixe={structureFixe} localiteDepart={localiteId} mois={mois} onFermer={() => setInvitation(false)} />}
 
       {structureFixe && !structure && <p className="tdb-vide">Cette structure n'existe pas dans les données de cet appareil.</p>}
       {quartiersCibles.length === 0 ? (
         <p className="tdb-vide">{structureFixe ? "Aucun quartier n'est couvert par cette structure." : 'Choisissez une structure ou un quartier.'}</p>
       ) : (
         <>
+          {/* Inviter les familles par SMS + dernières invitations */}
+          <div className="inv-entete non-imprime">
+            <button className="tdb-cta" onClick={() => setInvitation(true)}>
+              <span className="tdb-cta-plus" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round" /><path d="M7 10h10M7 13h6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" /></svg>
+              </span>
+              <span>
+                <strong>Inviter des parents</strong>
+                <small>Par SMS, selon l'âge et le quartier</small>
+              </span>
+            </button>
+            {dernieresInvitations.length > 0 && (
+              <section className="inv-historique">
+                <h3>Dernières invitations</h3>
+                <ul>
+                  {dernieresInvitations.map((inv) => (
+                    <li key={inv.id}>
+                      <strong>{inv.enfantIds.length} SMS</strong>
+                      <span className="tdb-detail">
+                        envoyés le {new Date(inv.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                        {' · '}{inv.tranches.length === TRANCHES.length ? 'tous âges' : inv.tranches.map(libelleTranche).join(', ')}
+                        {' · '}{inv.quartierIds.map(nomQuartierDe).join(', ')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+
           {/* Enfants transmis automatiquement par la mairie (30 derniers jours) */}
           {nouveaux.length > 0 && (
             <section className="transmis non-imprime">

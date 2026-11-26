@@ -66,7 +66,7 @@ export default function App() {
   });
 
   if (cible === '/') {
-    return <Presentation onEntrer={() => aller(compte ? ACCUEIL[compte.role] : '/connexion')} connecte={!!compte} />;
+    return <Presentation store={store} onEntrer={() => aller(compte ? ACCUEIL[compte.role] : '/connexion')} connecte={!!compte} />;
   }
   if (cible.endsWith('/connexion')) {
     const roleConnexion = cible === '/connexion' ? undefined : roleChemin;

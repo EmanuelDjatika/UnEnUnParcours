@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Ateliers, Donnees, Enfant, Jeu, Presence, Quartier, Structure, TrancheId } from '../types';
+import type { Ateliers, DemandeJeux, Donnees, Enfant, Invitation, Jeu, Presence, Quartier, Structure, TrancheId } from '../types';
 import { donneesVides, genererDemo } from '../data/demo';
+import { JEUX_PAR_DEFAUT } from '../data/ateliers';
 
 const CLE = 'un-enfant-un-parcours-eveil:v2';
 
@@ -55,8 +56,23 @@ export function valider(x: unknown): Donnees | null {
     structures,
     enfants: o.enfants,
     presences: Array.isArray(o.presences) ? o.presences : [],
-    ateliers: nettoyerAteliers(o.ateliers),
+    ...ajouterJeuxParDefaut(nettoyerAteliers(o.ateliers), Array.isArray(o.jeuxDefautVus) ? o.jeuxDefautVus : []),
+    invitations: Array.isArray(o.invitations) ? o.invitations : [],
+    demandesJeux: Array.isArray(o.demandesJeux) ? o.demandesJeux : [],
   };
+}
+
+/** Ajoute une seule fois les nouveaux jeux par défaut aux données déjà enregistrées */
+function ajouterJeuxParDefaut(ateliers: Ateliers, vus: string[]): Pick<Donnees, 'ateliers' | 'jeuxDefautVus'> {
+  const res: Ateliers = { ...ateliers };
+  for (const { tranche, jeu } of JEUX_PAR_DEFAUT) {
+    // Jeu par défaut déjà présent : son contenu suit toujours la version du code (il n'est pas modifiable dans l'app)
+    const i = res[tranche].findIndex((j) => j.id === jeu.id);
+    if (i >= 0) res[tranche] = res[tranche].map((j, k) => (k === i ? { ...jeu } : j));
+    if (vus.includes(jeu.id) || i >= 0) continue;
+    res[tranche] = [...res[tranche], { ...jeu }];
+  }
+  return { ateliers: res, jeuxDefautVus: [...new Set([...vus, ...JEUX_PAR_DEFAUT.map((d) => d.jeu.id)])] };
 }
 
 /** Garde seulement les jeux au nouveau format (les anciens exemples en texte sont retirés), tranches 0 à 4 */
@@ -167,6 +183,27 @@ export function useStore() {
     setDonnees((d) => ({ ...d, ateliers: { ...d.ateliers, [t]: jeux } as Ateliers }));
   }, []);
 
+  /**
+   * Enregistre une campagne d'invitations SMS (simulée) et marque chaque
+   * enfant concerné comme « invité » pour le mois de l'atelier.
+   */
+  const envoyerInvitations = useCallback((inv: Omit<Invitation, 'id' | 'date'>) => {
+    setDonnees((d) => {
+      const presences = [...d.presences];
+      for (const id of inv.enfantIds) {
+        const i = presences.findIndex((p) => p.enfantId === id && p.mois === inv.mois);
+        if (i >= 0) presences[i] = { ...presences[i], invite: true };
+        else presences.push({ enfantId: id, mois: inv.mois, appele: false, confirme: false, venu: false, invite: true });
+      }
+      return { ...d, presences, invitations: [...d.invitations, { ...inv, id: nouvelId('inv'), date: new Date().toISOString() }] };
+    });
+  }, []);
+
+  /** Enregistre le formulaire d'accès aux jeux rempli sur la page publique */
+  const enregistrerDemandeJeux = useCallback((dem: Omit<DemandeJeux, 'id' | 'date'>) => {
+    setDonnees((d) => ({ ...d, demandesJeux: [...(d.demandesJeux ?? []), { ...dem, id: nouvelId('dem'), date: new Date().toISOString() }] }));
+  }, []);
+
   const chargerDemo = useCallback(() => setDonnees(genererDemo()), []);
   const toutEffacer = useCallback(() => setDonnees(donneesVides()), []);
   const remplacer = useCallback((d: Donnees) => setDonnees(d), []);
@@ -179,6 +216,8 @@ export function useStore() {
     enregistrerStructure,
     majPresence,
     majAteliers,
+    envoyerInvitations,
+    enregistrerDemandeJeux,
     chargerDemo,
     toutEffacer,
     remplacer,

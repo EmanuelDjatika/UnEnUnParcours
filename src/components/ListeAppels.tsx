@@ -40,7 +40,10 @@ export default function ListeAppels({ tranche, enfants, jeux, mois, dateRef, pre
                 return (
                   <tr key={e.id}>
                     <td data-titre="Parent">{e.parentNom}</td>
-                    <td data-titre="Téléphone"><a href={`tel:${e.parentTelephone.replace(/\s/g, '')}`}>{e.parentTelephone}</a></td>
+                    <td data-titre="Téléphone">
+                      <a href={`tel:${e.parentTelephone.replace(/\s/g, '')}`}>{e.parentTelephone}</a>
+                      {pr?.invite && <span className="badge-sms">SMS envoyé</span>}
+                    </td>
                     <td data-titre="Langue">{e.langue}</td>
                     <td data-titre="Enfant">
                       <strong>{e.prenom}</strong>
