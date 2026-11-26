@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { CSSProperties, FormEvent } from 'react';
 import type { Store } from '../store/useStore';
-import type { TrancheId } from '../types';
+import type { Jeu, TrancheId } from '../types';
 import { TRANCHES, libelleTranche } from '../utils/age';
 import IllustrationAge from './IllustrationAge';
-import { COULEURS_AGES, Cadenas, CarteJeu, Fenetre, FicheJeu } from './JeuCommun';
+import { COULEURS_AGES, Cadenas, Fenetre, FicheJeu, vignetteJeu } from './JeuCommun';
+import { BESOINS } from '../data/besoins';
+import { competence } from '../data/competences';
 
 /** Ce que l'enfant développe à chaque âge */
 const ACCROCHES: Record<TrancheId, string> = {
@@ -23,6 +25,89 @@ const THEMES: Record<TrancheId, string> = {
   3: 'Compter, assembler',
   4: "Vers l'école",
 };
+
+/** Un jeu, en petit : vignette de la vidéo, nom, et ce qu'il faut pour l'ouvrir */
+function PastilleJeu({ jeu, tranche, verrouille, onOuvrir }: { jeu: Jeu; tranche: TrancheId; verrouille: boolean; onOuvrir: () => void }) {
+  const vignette = vignetteJeu(jeu);
+  return (
+    <button className="besoin-jeu" onClick={onOuvrir}>
+      <span className="besoin-jeu-vignette" style={{ background: COULEURS_AGES[tranche] }}>
+        {vignette ? <img src={vignette} alt="" loading="lazy" /> : <b>{jeu.nom.charAt(0)}</b>}
+        <i aria-hidden="true">{verrouille ? <Cadenas taille={13} /> : '▶'}</i>
+      </span>
+      <span className="besoin-jeu-texte">
+        <small>{jeu.format === 'video' ? 'Vidéo de fabrication' : 'Fabrication en images'}</small>
+        <strong>{jeu.nom}</strong>
+      </span>
+      <span className="besoin-jeu-fleche" aria-hidden="true">›</span>
+    </button>
+  );
+}
+
+/**
+ * Schéma d'un âge : chaque besoin de l'enfant, relié au(x) jeu(x) qui y répondent.
+ * Les jeux sans capacité correspondante sont listés à la fin.
+ */
+function SchemaBesoins({ tranche, jeux, verrouille, onOuvrir }: { tranche: TrancheId; jeux: Jeu[]; verrouille: boolean; onOuvrir: (id: string) => void }) {
+  const besoins = BESOINS[tranche];
+  const relies = new Set<string>();
+  const lignes = besoins.map((b) => {
+    const associes = jeux.filter((j) => j.competences?.includes(b.competence));
+    associes.forEach((j) => relies.add(j.id));
+    return { besoin: b, comp: competence(b.competence)!, associes };
+  });
+  const autres = jeux.filter((j) => !relies.has(j.id));
+  const couverts = lignes.filter((l) => l.associes.length).length;
+
+  return (
+    <div className="schema">
+      <div className="schema-tete">
+        <IllustrationAge tranche={tranche} taille={84} />
+        <div>
+          <span className="schema-surtitre">À {libelleTranche(tranche)}</span>
+          <h3>Ce dont votre enfant a besoin</h3>
+          <p>{ACCROCHES[tranche]}</p>
+        </div>
+        <div className="schema-bilan" aria-label={`${couverts} besoins sur ${besoins.length} ont un jeu`}>
+          <strong>{couverts}<span>/{besoins.length}</span></strong>
+          <small>besoins avec un jeu</small>
+        </div>
+      </div>
+
+      <div className="schema-colonnes" aria-hidden="true">
+        <span>Le besoin</span><span>Le jeu à fabriquer</span>
+      </div>
+      <ol className="schema-lignes">
+        {lignes.map(({ besoin, comp, associes }) => (
+          <li key={besoin.competence} className={`schema-ligne ${associes.length ? '' : 'sans-jeu'}`} style={{ '--c': comp.couleur, '--f': comp.fond } as CSSProperties}>
+            <div className="schema-besoin">
+              <span className="schema-icone">{comp.icone}</span>
+              <div>
+                <strong>{comp.nom}</strong>
+                <p>{besoin.texte}</p>
+              </div>
+            </div>
+            <span className="schema-lien" aria-hidden="true" />
+            <div className="schema-jeux">
+              {associes.length
+                ? associes.map((j) => <PastilleJeu key={j.id} jeu={j} tranche={tranche} verrouille={verrouille} onOuvrir={() => onOuvrir(j.id)} />)
+                : <span className="schema-attente">Jeu bientôt disponible</span>}
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      {autres.length > 0 && (
+        <div className="schema-autres">
+          <h4>Autres jeux pour cet âge</h4>
+          <div className="schema-jeux">
+            {autres.map((j) => <PastilleJeu key={j.id} jeu={j} tranche={tranche} verrouille={verrouille} onOuvrir={() => onOuvrir(j.id)} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Sur cet appareil, le formulaire a déjà été rempli : les jeux restent ouverts */
 const CLE_ACCES = 'un-enfant-un-parcours-eveil:acces-jeux';
@@ -149,16 +234,7 @@ export default function JeuxPublics({ store }: { store: Store }) {
       </div>
 
       <div className="vt-jeux-panneau" id="jeux-age" role="tabpanel" aria-labelledby={`onglet-age-${tranche}`}>
-        <p className="vt-jeux-accroche"><span style={{ background: COULEURS_AGES[tranche] }} />{ACCROCHES[tranche]}</p>
-        {jeux.length > 0 ? (
-          <ul className="jeux-cartes">
-            {jeux.map((j) => (
-              <li key={j.id}><CarteJeu jeu={j} tranche={tranche} verrouille={!acces} onOuvrir={() => ouvrir(j.id)} /></li>
-            ))}
-          </ul>
-        ) : (
-          <p className="vt-jeux-vide">Les jeux pour les {libelleTranche(tranche)} arrivent bientôt.</p>
-        )}
+        <SchemaBesoins tranche={tranche} jeux={jeux} verrouille={!acces} onOuvrir={ouvrir} />
       </div>
 
       {formulaire && (
